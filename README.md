@@ -1,1 +1,21 @@
 # gambleswap-core
+
+Contents of the .env file at the end must be:
+
+```
+INFURA_API_KEY=
+MNEMONIC=
+ETHERSCAN_API=
+USER_ADDRESS=
+FACTORY_ADDRESS=
+PAIR_ADDRESS=
+WETH_ADDRESS=
+ROUTER_ADDRESS=
+FACTORY_OWNER_PRIVATE_KEY=
+FACTORY_OWNER_ADDRESS=
+LP_PRIVATE_KEY=
+LP_ADDRESS=
+TOKEN_ADDRESS_1=
+TOKEN_ADDRESS_2=
+```
+(Fill each entry based on your local/ropsten environment)
