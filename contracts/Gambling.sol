@@ -1,8 +1,16 @@
 // SPDX-License-Identifier: MIT
 
+import "./GMB.sol";
+
 pragma solidity ^0.8.3;
 
 contract Gambling {
+
+    GMBToken gmbTokenContract;
+
+    constructor(address GMBContractAddr) {
+        gmbTokenContract = GMBToken(GMBContractAddr);
+    }
 
     struct participationData {
         uint gmbToken;
@@ -23,6 +31,7 @@ contract Gambling {
         participations[accountAddr].gmbToken = gmbToken;
         participations[accountAddr].betValue = betValue;
         
-        //Send GMB token from user to the admin
+        //Send GMB tokens from the user to the gamblingContract
+        gmbTokenContract.transferToAdmin(accountAddr, gmbToken);
     }
 }
