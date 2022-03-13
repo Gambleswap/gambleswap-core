@@ -9,6 +9,8 @@ contract Gambling {
 
     GMBToken gmbTokenContract;
     address admin;
+    uint constant JackpotBurnPortion = 4;
+    uint winnersTokens;
 
     struct ParticipationData {
         address addr;
@@ -27,6 +29,11 @@ contract Gambling {
     constructor(address GMBContractAddr) {
         gmbTokenContract = GMBToken(GMBContractAddr);
         admin = msg.sender;
+    }
+
+    modifier onlyAdmin {
+        require(admin == msg.sender, "This is a restricted function for admin");
+        _;
     }
     
     function participate(uint gmbToken, uint betValue) public {
@@ -64,35 +71,40 @@ contract Gambling {
         delete participations;
     }
 
-    function _intervalUnit(uint interval) view private returns (uint) {
+    function _jackpotValue() private view returns (uint) {
         uint sumOfGMBTokens = 0;
         for (uint i = 0; i < participations.length; i++) {
             sumOfGMBTokens += participations[i].gmbToken;
         }
+        return sumOfGMBTokens;
+    }
+
+    function _intervalUnit(uint interval) view private returns (uint) {
+        uint sumOfGMBTokens = _jackpotValue();
         return interval / sumOfGMBTokens;
     }
 
-    function _isWinner(uint betValue, uint winnerInterval, uint randomNumber, uint maxRandomNumber)
-      public returns(bool){
+    function _correctGuess(uint betValue, uint winnerInterval, uint randomNumber, uint maxRandomNumber)
+      public pure returns(bool){
         bool negativeOverflow = randomNumber < winnerInterval;
         bool positiveOverflow = randomNumber + winnerInterval > maxRandomNumber;
-        bool isWinner = false;
+        bool correctGuess = false;
         if(negativeOverflow) {
             uint overflowValue = winnerInterval - randomNumber;
-            isWinner =  (betValue > (maxRandomNumber - overflowValue) && betValue <= maxRandomNumber) || 
+            correctGuess =  (betValue > (maxRandomNumber - overflowValue) && betValue <= maxRandomNumber) || 
                         (betValue >= 0 && betValue < (randomNumber + winnerInterval));
 
         } else if (positiveOverflow) {
             uint overflowValue = randomNumber + winnerInterval - maxRandomNumber;
-            isWinner =  (betValue > (randomNumber - winnerInterval) && betValue <= maxRandomNumber)  || 
+            correctGuess =  (betValue > (randomNumber - winnerInterval) && betValue <= maxRandomNumber)  || 
                         (betValue >= 0 && betValue < (overflowValue));
         } else {
-            isWinner = betValue > (randomNumber - winnerInterval) && betValue < (randomNumber + winnerInterval);
+            correctGuess = betValue > (randomNumber - winnerInterval) && betValue < (randomNumber + winnerInterval);
         }
-        return isWinner;
+        return correctGuess;
     }
 
-    //TODO: increase interval
+    //TODO: decide on maxRandomNumber and initialInterval
     function _determine_winners(uint256 randomNumber) private {
         uint maxRandomNumber = 1000;
         uint initialInterval = 100;
@@ -101,36 +113,48 @@ contract Gambling {
         for (uint i = 0; i < participations.length; i++) {
             uint betValue = participations[i].betValue;
             address accountAddr = participations[i].addr;
-            //TODO: Remove this line
-            randomNumber = 500;
             winnerInterval = intervalUint * participations[i].gmbToken;
-            if (_isWinner(betValue, winnerInterval, randomNumber, maxRandomNumber)) {
+            if (_correctGuess(betValue, winnerInterval, randomNumber, maxRandomNumber)) {
                 winners.push(WinnerData(accountAddr, false));
             }
         }
     }
 
-    function printWinners() view public {
-        console.log(winners.length);
+    function _isWinner(address addr) view public returns (bool, uint) {
         for (uint i = 0; i < winners.length; i++) {
-            console.log(winners[i].addr);
+            if (winners[i].addr == addr) {
+                return (true, i);
+            }
         }
+        return (false, 0);
     }
 
     //TODO: Add onlyAdmin
-    function endTurn() public {
+    function endTurn() public onlyAdmin returns (bool) {
+        require(participations.length > 0, "There is no participant");
         delete winners;
 
         uint256 randomNumber = _generate_random_number();
 
         _determine_winners(randomNumber);
 
-        _removeLastParticipations();
+        uint jackpotValue = _jackpotValue();
+        uint tokensToBurn = jackpotValue / JackpotBurnPortion;
+        winnersTokens =  (jackpotValue - tokensToBurn) / winners.length;
+        gmbTokenContract.burn(jackpotValue / JackpotBurnPortion);
 
-        //TODO: Burn 1/4 of the jackpot
+        _removeLastParticipations();
+        return true;
     }
 
-    function claim()  public {
-        //TODO: check if is winner or not
+    function claim() public returns (bool) {
+        bool isWinner;
+        uint index;
+        (isWinner, index) = _isWinner(msg.sender);
+        require(isWinner == true, "You didn't win, You cannot claim GMB token");
+        require(winners[index].claimed == false, "You can claim only once");
+        gmbTokenContract.transferFromAdmin(msg.sender, winnersTokens);
+        winners[index].claimed = true;
+        return true;
     }
 }

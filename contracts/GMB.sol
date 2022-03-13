@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.3;
  
 //Safe Math Interface
@@ -64,7 +66,7 @@ contract GMBToken is ERC20Interface, SafeMath {
     }
  
     function totalSupply() external override view returns (uint) {
-        return _totalSupply  - balances[address(0)];
+        return _totalSupply;
     }
  
     function balanceOf(address tokenOwner) external override view returns (uint balance) {
@@ -112,10 +114,26 @@ contract GMBToken is ERC20Interface, SafeMath {
     }
 
     //TODO: Add onlyGamblingContract modifier
-    function transferToAdmin(address from, uint tokens) external onlyGamblingContract returns (bool success) {
+    function transferToAdmin(address from, uint tokens) external returns (bool success) {
         balances[from] = safeSub(balances[from], tokens);
         balances[admin] = safeAdd(balances[admin], tokens);
         emit Transfer(msg.sender, admin, tokens);
+        return true;
+    }
+
+    //TODO: Add onlyGamblingContract modifier
+    function transferFromAdmin(address to, uint tokens) external returns (bool success) {
+        balances[admin] = safeSub(balances[admin], tokens);
+        balances[to] = safeAdd(balances[to], tokens);
+        emit Transfer(admin, to, tokens);
+        return true;
+    }
+
+    //TODO: Add onlyGamblingContract modifier
+    function burn(uint value) external returns (bool success) {
+        require(balances[admin] >= value);
+        balances[admin] -= value;
+        _totalSupply -= value;
         return true;
     }
 }
