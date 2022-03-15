@@ -129,7 +129,6 @@ contract Gambling {
         return (false, 0);
     }
 
-    //TODO: Add onlyAdmin
     function endTurn() public onlyAdmin returns (bool) {
         require(participations.length > 0, "There is no participant");
         delete winners;
@@ -140,7 +139,9 @@ contract Gambling {
 
         uint jackpotValue = _jackpotValue();
         uint tokensToBurn = jackpotValue / JackpotBurnPortion;
-        winnersTokens =  (jackpotValue - tokensToBurn) / winners.length;
+        if (winners.length > 0) {
+            winnersTokens =  (jackpotValue - tokensToBurn) / winners.length;
+        }
         gmbTokenContract.burn(jackpotValue / JackpotBurnPortion);
 
         _removeLastParticipations();
