@@ -41,4 +41,27 @@ describe("Gambling Contract", function () {
         await gamblingContract.connect(user1).participate(10, 1);
         expect(await GMBContract.balanceOf(user1.address)).to.be.equal(90);
     });
+
+    it("Only admin can call endTurn", async function () {
+        await expect(gamblingContract.connect(user1).endTurn()).to.be.reverted;
+    });
+
+    it("endTurn cannot be executed without any participant", async function () {
+        await expect(gamblingContract.endTurn()).to.be.reverted;
+    });
+
+    it("endTurn should be worked if everything is fine", async function () {
+        await GMBContract.transfer(user1.address, 100);
+        await gamblingContract.connect(user1).participate(10, 1);
+        await expect(gamblingContract.endTurn()).not.to.be.reverted;
+    });
+
+    it("_correctGuess function should work properly with positive and negative overflow", async function () {
+        expect(await gamblingContract._correctGuess(9, 20, 990, 1000)).to.be.true;
+        expect(await gamblingContract._correctGuess(991, 20, 9, 1000)).to.be.true;
+        expect(await gamblingContract._correctGuess(490, 20, 500, 1000)).to.be.true;
+        expect(await gamblingContract._correctGuess(479, 20, 500, 1000)).to.be.false;
+    });
+
+
 });
