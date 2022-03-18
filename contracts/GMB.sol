@@ -52,14 +52,22 @@ contract GMBToken is ERC20Interface, SafeMath {
     //TODO: Set admin later
     address  public admin;
     address public gamblingContract;
- 
+    poolInfo[] authorisedPools;
+
+    struct poolInfo{
+        address poolAddress;
+        uint256 rewardsPerBlock;
+    }
+
+    event NewPool(address indexed addr, uint256 reward);
+
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
  
     constructor() public {
         symbol = "GMB";
         name = "GambleSwap Token";
-        decimals = 2;
+        decimals = 18;
         _totalSupply = 10000;
         admin = msg.sender;
         balances[admin] = _totalSupply;
@@ -135,5 +143,11 @@ contract GMBToken is ERC20Interface, SafeMath {
         balances[admin] -= value;
         _totalSupply -= value;
         return true;
+    }
+
+    function addNewPool(address pool, uint256 rewards) onlyAdmin public{
+        poolInfo memory pi = poolInfo(pool, rewards);
+        authorisedPools.push(pi);
+        emit NewPool(pi.poolAddress, pi.rewardsPerBlock);
     }
 }
