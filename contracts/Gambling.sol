@@ -47,11 +47,11 @@ contract Gambling {
         //TODO: Check if sender has LPTokens
         //TODO: Lock LPTokens
 
+        //Send GMB tokens from the user to the gamblingContract
+        gmbTokenContract.transferFrom(msg.sender, address(this), gmbToken);
+
         isParticipated[accountAddr] = true;
         participations.push(ParticipationData(accountAddr, gmbToken, betValue));
-        
-        //Send GMB tokens from the user to the gamblingContract
-        gmbTokenContract.transferToAdmin(accountAddr, gmbToken);
     }
 
     function _generate_random_number() public view returns(uint256) {
