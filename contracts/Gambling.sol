@@ -1,16 +1,18 @@
 // SPDX-License-Identifier: MIT
 
 import "./GMB.sol";
+import "./IGMB.sol";
 import "hardhat/console.sol";
 
 pragma solidity ^0.8.3;
 
 contract Gambling {
 
-    GMBToken gmbTokenContract;
+    address gmbTokenContract;
     address admin;
     uint constant JackpotBurnPortion = 4;
     uint winnersTokens;
+    uint QualificationThreshold = 1;
 
     struct ParticipationData {
         address addr;
@@ -27,7 +29,7 @@ contract Gambling {
     WinnerData[] winners;
 
     constructor(address GMBContractAddr) {
-        gmbTokenContract = GMBToken(GMBContractAddr);
+        gmbTokenContract = GMBContractAddr;
         admin = msg.sender;
     }
 
@@ -35,6 +37,15 @@ contract Gambling {
         require(admin == msg.sender, "This is a restricted function for admin");
         _;
     }
+
+    function checkLPToken(address user) public view returns (bool ret){
+        for(uint256 i=0; i<IGMBToken(gmbTokenContract).getAuthorisedPoolsLength(); i++) {
+            address authorizePoolAddr = IGMBToken(gmbTokenContract).authorisedPools(i);
+            uint256 userBalance = IERC20(authorizePoolAddr).balanceOf(user);
+            uint256 totalSupply = IERC20(authorizePoolAddr).totalSupply();
+            // if (totalSupply * 1e12 * )
+        }
+    } 
     
     function participate(uint gmbToken, uint betValue) public {
         address accountAddr = msg.sender;

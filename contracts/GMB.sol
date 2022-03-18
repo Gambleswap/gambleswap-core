@@ -3,19 +3,13 @@
 pragma solidity ^0.8.3;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./IGMB.sol";
 
-contract GMBToken is ERC20 {
+contract GMBToken is ERC20, IGMBToken {
 
     address public admin;
     address public gamblingContract;
-    poolInfo[] authorisedPools;
-
-    struct poolInfo{
-        address poolAddress;
-        uint256 rewardsPerBlock;
-    }
-
-    event NewPool(address indexed addr, uint256 reward);
+    address[] public override authorisedPools;
 
     constructor(uint256 initialSupply) public ERC20("GMB Token", "GMB") {
         admin = msg.sender;
@@ -35,7 +29,7 @@ contract GMBToken is ERC20 {
     modifier onlyAuthorizedPools {
         bool isAuthorized = false;
         for(uint i=0; i<authorisedPools.length; i++) {
-            if(authorisedPools[i].poolAddress == msg.sender) {
+            if(authorisedPools[i] == msg.sender) {
                 isAuthorized = true;
             }
         }
@@ -56,10 +50,12 @@ contract GMBToken is ERC20 {
         _burn(gamblingContractAddr, amount);
     }
 
-    function addNewPool(address pool, uint256 rewards) onlyAdmin public{
-        poolInfo memory pi = poolInfo(pool, rewards);
-        authorisedPools.push(pi);
-        emit NewPool(pi.poolAddress, pi.rewardsPerBlock);
+    function addNewPool(address poolAddr) onlyAdmin override external {
+        authorisedPools.push(poolAddr);
+        emit NewPool(poolAddr);
     }
 
+    function getAuthorisedPoolsLength() external view returns (uint256) {
+        return authorisedPools.length;
+    }
 }
