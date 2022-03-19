@@ -51,15 +51,16 @@ contract Gambling {
         _;
     }
 
-    function checkLPToken(address user) public view returns (address addr){
+    function checkLPToken(address user) public view returns (address){
         for(uint256 i=0; i<IGMBToken(gmbTokenContract).getAuthorisedPoolsLength(); i++) {
             address authorizePoolAddr = IGMBToken(gmbTokenContract).authorisedPools(i);
             uint256 userBalance = IERC20(authorizePoolAddr).balanceOf(user);
             uint256 totalSupply = IERC20(authorizePoolAddr).totalSupply();
-            if (userBalance * 1e4 > totalSupply)
-                addr = authorizePoolAddr;
+            if (userBalance * 1e4 > totalSupply){
+                return authorizePoolAddr;
+            }
         }
-        addr = address(0);
+        return address(0);
     } 
     
     function participate(uint gmbToken, uint betValue) public {
