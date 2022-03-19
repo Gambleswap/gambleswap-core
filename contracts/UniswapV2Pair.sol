@@ -7,6 +7,7 @@ import './UQ112x112.sol';
 import './IERC20.sol';
 import './IUniswapV2Factory.sol';
 import './IUniswapV2Callee.sol';
+import './IGMB.sol';
 
 contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     using SafeMath  for uint;
@@ -15,9 +16,18 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
     uint public constant override MINIMUM_LIQUIDITY = 10**3;
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
 
+    struct profile{
+        uint256 lastClaimBlock;
+        bool valid;
+    }
+
+    mapping (address=>profile) profiles;
+
     address public override factory;
     address public override token0;
     address public override token1;
+    address public gmb;
+    uint public GMBPERBLOCK;
 
     uint112 private reserve0;           // uses single storage slot, accessible via getReserves
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
@@ -33,6 +43,18 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         unlocked = 0;
         _;
         unlocked = 1;
+    }
+
+    modifier onlyFactory() {
+        require(msg.sender == factory, 'UniswapV2: FORBIDDEN'); // sufficient check
+        _;
+    }
+
+    modifier forceClaim() {
+        if (profiles[msg.sender].valid){
+            _claim(msg.sender);
+        }
+        _;
     }
 
     function getReserves() public view override returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast) {
@@ -57,16 +79,22 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         address indexed to
     );
     event Sync(uint112 reserve0, uint112 reserve1);
+    event MiningAmountChanged(uint112);
 
     constructor() public {
         factory = msg.sender;
     }
 
     // called once by the factory at time of deployment
-    function initialize(address _token0, address _token1) override external {
-        require(msg.sender == factory, 'UniswapV2: FORBIDDEN'); // sufficient check
+    function initialize(address _token0, address _token1) onlyFactory override external {
         token0 = _token0;
         token1 = _token1;
+
+    }
+
+    function changeMintingAmount(uint112 amount) public onlyFactory{
+        GMBPERBLOCK = amount;
+        emit MiningAmountChanged(amount);
     }
 
     // update reserves and, on the first call per block, price accumulators
@@ -106,8 +134,21 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         }
     }
 
+    function _claim(address user) internal{
+        uint rounds = block.number - profiles[user].lastClaimBlock;
+        uint userBalance = balanceOf[address(this)] + balanceOf[user];
+        uint userReward = GMBPERBLOCK.mul(rounds).mul(userBalance) / totalSupply;
+        IGMBToken(gmb).mint(user, userReward);
+        profiles[user].lastClaimBlock = block.number;
+    }
+
+    function claim() public{
+        require(profiles[msg.sender].valid, "Provide some liquidity before calling claim function");
+        _claim(msg.sender);
+    }
+
     // this low-level function should be called from a contract which performs important safety checks
-    function mint(address to) external lock override returns (uint liquidity) {
+    function mint(address to) external forceClaim lock override returns (uint liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         uint balance0 = IERC20(token0).balanceOf(address(this));
         uint balance1 = IERC20(token1).balanceOf(address(this));
@@ -124,14 +165,14 @@ contract UniswapV2Pair is IUniswapV2Pair, UniswapV2ERC20 {
         }
         require(liquidity > 0, 'UniswapV2: INSUFFICIENT_LIQUIDITY_MINTED');
         _mint(to, liquidity);
-
+        profiles[to].valid = true;
         _update(balance0, balance1, _reserve0, _reserve1);
         if (feeOn) kLast = uint(reserve0).mul(reserve1); // reserve0 and reserve1 are up-to-date
         emit Mint(msg.sender, amount0, amount1);
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function burn(address to) external lock override returns (uint amount0, uint amount1) {
+    function burn(address to) external forceClaim lock override returns (uint amount0, uint amount1) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         address _token0 = token0;                                // gas savings
         address _token1 = token1;                                // gas savings

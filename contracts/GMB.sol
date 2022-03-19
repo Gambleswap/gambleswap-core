@@ -37,15 +37,15 @@ contract GMBToken is ERC20, IGMBToken {
         _;
     }
 
-    function setGamblingContractAddess(address addr) external onlyAdmin {
+    function setGamblingContractAddess(address addr) override external onlyAdmin {
         gamblingContract = addr;
     }
 
-    function mint(address account, uint256 amount) external onlyAuthorizedPools {
+    function mint(address account, uint256 amount) override external onlyAuthorizedPools {
         _mint(account, amount);
     }
 
-    function burn(uint amount) external onlyGamblingContract {
+    function burn(uint amount) override external onlyGamblingContract {
         address gamblingContractAddr = msg.sender;
         _burn(gamblingContractAddr, amount);
     }
@@ -55,7 +55,7 @@ contract GMBToken is ERC20, IGMBToken {
         emit NewPool(poolAddr);
     }
 
-    function getAuthorisedPoolsLength() external view returns (uint256) {
+    function getAuthorisedPoolsLength() override external view returns (uint256) {
         return authorisedPools.length;
     }
 }

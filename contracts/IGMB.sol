@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.3;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
 interface IGMBToken {
 
     event NewPool(address indexed addr);
@@ -13,4 +11,11 @@ interface IGMBToken {
     function authorisedPools(uint256 index) external view returns (address);
 
     function getAuthorisedPoolsLength() external view returns (uint256);
+
+    function mint(address account, uint256 amount) external;
+
+    function setGamblingContractAddess(address addr) external;
+
+    function burn(uint amount) external;
+
 }
