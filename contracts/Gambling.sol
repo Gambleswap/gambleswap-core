@@ -90,7 +90,8 @@ contract Gambling {
         ((uint256(keccak256(abi.encodePacked(msg.sender)))) / (block.timestamp)) +
         block.number)));
 
-        return (seed - ((seed / 1000) * 1000));
+        return 20;
+        // return (seed - ((seed / maxRandomNumber) * maxRandomNumber));
     }
 
     function _jackpotValue() private view returns (uint) {
@@ -106,8 +107,8 @@ contract Gambling {
         return maxRandomNumber / 2 / sumOfGMBTokens;
     }
 
-    function _correctGuess(uint betValue, uint winnerInterval, uint randomNumber, uint maxRandomNumber)
-      public pure returns(bool){
+    function _correctGuess(uint betValue, uint winnerInterval, uint randomNumber)
+      public view returns(bool){
         bool negativeOverflow = randomNumber < winnerInterval;
         bool positiveOverflow = randomNumber + winnerInterval > maxRandomNumber;
         bool correctGuess = false;
@@ -134,7 +135,7 @@ contract Gambling {
             uint betValue = games[currentRound].participants[i].betValue;
             address accountAddr = games[currentRound].participants[i].addr;
             userInterval = _coveragePerGMB * games[currentRound].participants[i].gmbToken;
-            if (_correctGuess(betValue, userInterval, randomNumber, maxRandomNumber)) {
+            if (_correctGuess(betValue, userInterval, randomNumber)) {
                 games[currentRound].winners.push(WinnerData(accountAddr, false));
             }
         }
