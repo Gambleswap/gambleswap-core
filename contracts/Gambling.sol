@@ -43,7 +43,7 @@ contract Gambling {
     constructor(address GMBContractAddr) {
         gmbTokenContract = GMBContractAddr;
         admin = msg.sender;
-        games[0].coveragePerGMB = 1;
+        games[0].coveragePerGMB = 10;
     }
 
     modifier onlyAdmin {
@@ -105,7 +105,7 @@ contract Gambling {
 
     function _newCoverage() view private returns (uint) {
         uint sumOfGMBTokens = _jackpotValue();
-        return maxRandomNumber / 2 / sumOfGMBTokens;
+        return maxRandomNumber / 4 / sumOfGMBTokens;
     }
 
     function _correctGuess(uint betValue, uint winnerInterval, uint randomNumber)
@@ -158,10 +158,6 @@ contract Gambling {
         //TODO emit log
     }
 
-    function newGame() public onlyAdmin{
-        _newGame();
-    }
-
     function endGame() public onlyAdmin {
         require(games[currentRound].participants.length > 0, "There is no participant");
 
@@ -185,9 +181,9 @@ contract Gambling {
         uint index;
         (isWinner, index) = _isWinner(gameNumber, msg.sender);
         require(isWinner == true, "You didn't win, You cannot claim GMB token");
-        require(games[currentRound].winners[index].claimed == false, "You can claim only once");
-        IERC20(gmbTokenContract).transfer(msg.sender, games[currentRound].winnerShare);
-        games[currentRound].winners[index].claimed = true;
+        require(games[gameNumber].winners[index].claimed == false, "You can claim only once");
+        IERC20(gmbTokenContract).transfer(msg.sender, games[gameNumber].winnerShare);
+        games[gameNumber].winners[index].claimed = true;
         return true;
     }
 }
