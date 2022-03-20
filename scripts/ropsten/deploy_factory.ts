@@ -5,7 +5,7 @@ const { getSigner, getContractFactory } = ethers;
 import { parseEther, formatEther} from "ethers/lib/utils";
 const BigNumber = require('big-number');
 
-async function main() {
+export async function deployFactory() {
     const {factoryOwnerAddress, gmbAddress} = await getNamedAccounts()
 
     console.log("==========================================================================================");
@@ -21,10 +21,11 @@ async function main() {
     console.log(`Factory has been deployed at ${factory.address}`);
 }
 
+// exports deployFactory
 
-main()
-    .then(() => process.exit(0))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    })
+// deployFactory()
+//     .then(() => process.exit(0))
+//     .catch(error => {
+//         console.error(error);
+//         process.exit(1);
+//     })

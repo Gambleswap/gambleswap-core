@@ -6,7 +6,7 @@ import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner } = ethers;
 
-async function main() {
+export async function addLP() {
 
     const {lpAddress, routerAddress, tokenAddress1, tokenAddress2} = await getNamedAccounts();
 
@@ -19,14 +19,14 @@ async function main() {
     await dni.approve(routerAddress, '9999999999999999999999')
     await router.addLiquidity(tokenAddress1, tokenAddress2,
             '2000000000000000000', '2000000000000000000', 
-            '2000000000000000000', '2000000000000000000', 
+            '1000000000000000000', '1000000000000000000', 
             lpAddress, 1746692432, {gasLimit: 2100000})
 }
 
 
-main()
-    .then(() => process.exit(0))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    });
+// addLP()
+//     .then(() => process.exit(0))
+//     .catch(error => {
+//         console.error(error);
+//         process.exit(1);
+//     });

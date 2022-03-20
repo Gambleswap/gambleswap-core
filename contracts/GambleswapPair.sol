@@ -51,9 +51,9 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
         _;
     }
 
-    modifier forceClaim() {
-        if (profiles[msg.sender].valid){
-            _claim(msg.sender);
+    modifier forceClaim(address user) {
+        if (profiles[user].valid){
+            _claimGMB(user);
         }
         _;
     }
@@ -93,7 +93,9 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
         gmb = _gmb;
     }
 
-    function changeMintingAmount(uint112 amount) public onlyFactory{
+    function changeMintingAmount(uint112 amount) public{
+        address admin = IGambleswapFactory(factory).feeToSetter();
+        require(msg.sender == admin, "only factory admin can set this");
         GMBPERBLOCK = amount;
         emit MiningAmountChanged(amount);
     }
@@ -134,21 +136,32 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
             kLast = 0;
         }
     }
-    function _claim(address user) internal{
+
+    event MyLog (uint val, string t);
+    
+    function _claimGMB(address user) internal{
         uint blocks = block.number - profiles[user].lastClaimBlock;
+        emit MyLog (blocks, "blocks");
         uint userBalance = balanceOf[address(this)] + balanceOf[user];
-        uint userReward = GMBPERBLOCK.mul(blocks).mul(userBalance) / totalSupply;
+        emit MyLog (userBalance, "userBalance");
+        uint userReward = 100 + GMBPERBLOCK.mul(blocks).mul(userBalance) / totalSupply;
+        emit MyLog (GMBPERBLOCK.mul(blocks).mul(userBalance), "aval");
+        emit MyLog (totalSupply, "dovom");
         IGMBToken(gmb).mint(user, userReward);
         profiles[user].lastClaimBlock = block.number;
     }
+    // function totalS() public view returns (uint256){
+    //     uint x = IERC20(gmb).totalSupply();
+    //     return x;
+    // }
 
-    function claim() public{
-        require(profiles[msg.sender].valid, "Provide some liquidity before calling claim function");
-        _claim(msg.sender);
+    function claimGMB(address user) lock override public{
+        require(profiles[user].valid, "Provide some liquidity before calling claim function");
+        _claimGMB(user);
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function mint(address to) external forceClaim lock override returns (uint liquidity) {
+    function mint(address to) external forceClaim(to) lock override returns (uint liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         uint balance0 = IERC20(token0).balanceOf(address(this));
         uint balance1 = IERC20(token1).balanceOf(address(this));
@@ -172,7 +185,7 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function burn(address to) external forceClaim lock override returns (uint amount0, uint amount1) {
+    function burn(address to) external forceClaim(to) lock override returns (uint amount0, uint amount1) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         address _token0 = token0;                                // gas savings
         address _token1 = token1;                                // gas savings

@@ -2,11 +2,11 @@ import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 
-async function main() {
+export async function deployUniTokens() {
 
     const {lpAddress} = await getNamedAccounts();
 
-    console.log(`Start deploying MyToken`);
+    console.log(`Start deploying UniTokens`);
     console.log("==========================================================================================");
 
 
@@ -20,9 +20,9 @@ async function main() {
 }
 
 
-main()
-    .then(() => process.exit(0))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    });
+// deployUniTokens()
+//     .then(() => process.exit(0))
+//     .catch(error => {
+//         console.error(error);
+//         process.exit(1);
+//     });

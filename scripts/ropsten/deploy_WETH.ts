@@ -2,7 +2,7 @@ import hre from "hardhat";
 const { ethers, getChainId, waffle, getNamedAccounts} = hre;
 const { getContractFactory } = ethers;
 
-async function main() {
+export async function deployWETH() {
 
 
     const MyTokenFactory = await getContractFactory('contracts/UniToken.sol:UniToken');
@@ -13,9 +13,9 @@ async function main() {
 }
 
 
-main()
-    .then(() => process.exit(0))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    });
+// deployWETH()
+//     .then(() => process.exit(0))
+//     .catch(error => {
+//         console.error(error);
+//         process.exit(1);
+//     });

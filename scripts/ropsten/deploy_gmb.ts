@@ -5,7 +5,7 @@ const { getSigner, getContractFactory } = ethers;
 import { parseEther, formatEther} from "ethers/lib/utils";
 const BigNumber = require('big-number');
 
-async function main() {
+export async function deployGMB() {
     const {lpAddress} = await getNamedAccounts()
 
     console.log("==========================================================================================");
@@ -21,9 +21,9 @@ async function main() {
 }
 
 
-main()
-    .then(() => process.exit(0))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    })
+// main()
+//     .then(() => process.exit(0))
+//     .catch(error => {
+//         console.error(error);
+//         process.exit(1);
+//     })

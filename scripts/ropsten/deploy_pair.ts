@@ -3,7 +3,7 @@ import hre from "hardhat";
 const { ethers, getChainId, getNamedAccounts} = hre;
 const { getSigner} = ethers;
 
-async function main() {
+export async function deployPair() {
 
     const {lpAddress, factoryAddress, tokenAddress1, tokenAddress2} = await getNamedAccounts();
 
@@ -21,9 +21,9 @@ async function main() {
 }
 
 
-main()
-    .then(() => process.exit(0))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    });
+// deployPair()
+//     .then(() => process.exit(0))
+//     .catch(error => {
+//         console.error(error);
+//         process.exit(1);
+//     });

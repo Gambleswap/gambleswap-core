@@ -5,18 +5,19 @@ const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 const BigNumber = require('big-number');
 
-async function main() {
+export async function addAuthorisedPool() {
     const {pairAddress, gmbAddress, lpAddress} = await getNamedAccounts()
 
     const gmb:GMBToken = GMBToken__factory.connect(gmbAddress, await getSigner(lpAddress));
 
     await gmb.addNewPool(pairAddress);
+    console.log(`pool is authorised ${pairAddress}`)
 }
 
 
-main()
-    .then(() => process.exit(0))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    })
+// addAuthorisedPool()
+//     .then(() => process.exit(0))
+//     .catch(error => {
+//         console.error(error);
+//         process.exit(1);
+//     })

@@ -2,7 +2,7 @@ import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 
-async function main() {
+export async function deployRouter() {
 
     const {factoryAddress, wethAddress, factoryOwnerAddress} = await getNamedAccounts();
 
@@ -19,9 +19,9 @@ async function main() {
 }
 
 
-main()
-    .then(() => process.exit(0))
-    .catch(error => {
-        console.error(error);
-        process.exit(1);
-    });
+// deployRouter()
+//     .then(() => process.exit(0))
+//     .catch(error => {
+//         console.error(error);
+//         process.exit(1);
+//     });
