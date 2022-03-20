@@ -5,6 +5,7 @@ import './GambleswapERC20.sol';
 import './Math.sol';
 import './UQ112x112.sol';
 import './IERC20.sol';
+import "hardhat/console.sol";
 import './IGambleswapFactory.sol';
 import './IGambleswapCallee.sol';
 import './IGMB.sol';
@@ -86,10 +87,10 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     }
 
     // called once by the factory at time of deployment
-    function initialize(address _token0, address _token1) onlyFactory override external {
+    function initialize(address _token0, address _token1, address _gmb) onlyFactory override external {
         token0 = _token0;
         token1 = _token1;
-
+        gmb = _gmb;
     }
 
     function changeMintingAmount(uint112 amount) public onlyFactory{
@@ -133,11 +134,10 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
             kLast = 0;
         }
     }
-
     function _claim(address user) internal{
-        uint rounds = block.number - profiles[user].lastClaimBlock;
+        uint blocks = block.number - profiles[user].lastClaimBlock;
         uint userBalance = balanceOf[address(this)] + balanceOf[user];
-        uint userReward = GMBPERBLOCK.mul(rounds).mul(userBalance) / totalSupply;
+        uint userReward = GMBPERBLOCK.mul(blocks).mul(userBalance) / totalSupply;
         IGMBToken(gmb).mint(user, userReward);
         profiles[user].lastClaimBlock = block.number;
     }

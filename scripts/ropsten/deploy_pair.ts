@@ -14,9 +14,9 @@ async function main() {
     console.log(`start update land 1 & 2 appraisal in  Land Registration SC`);
     console.log("==========================================================================================\n");
     const factory:GambleswapFactory = GambleswapFactory__factory.connect(factoryAddress, await getSigner(lpAddress));
-    console.log(`${await factory.createPair(tokenAddress1, tokenAddress2, {gasLimit: 2100000})}`)
+    console.log(`${await factory.createPair(tokenAddress1, tokenAddress2, {gasLimit: 21000000})}`)
 
-    // console.log(`${await factory.allPairs(0)}`)
+    console.log(`${await factory.allPairs(0)}`)
     console.log(`${await factory.allPairsLength()}`)
 }
 

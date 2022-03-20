@@ -15,9 +15,10 @@ const ROUTER_ADDRESS = process.env.ROUTER_ADDRESS
 const LP_ADDRESS = process.env.LP_ADDRESS
 const TOKEN_ADDRESS_1 = process.env.TOKEN_ADDRESS_1
 const TOKEN_ADDRESS_2 = process.env.TOKEN_ADDRESS_2
+const GMB_ADDRESS = process.env.GMB_ADDRESS
 const config =  {
   solidity: {
-    version: "0.8.7",
+    version: "0.8.13",
     settings: {
       optimizer: {
         enabled: true,
@@ -80,6 +81,9 @@ const config =  {
     },
     tokenAddress2: {
       default: TOKEN_ADDRESS_2
+    },
+    gmbAddress: {
+      default: GMB_ADDRESS
     }
   },
 };

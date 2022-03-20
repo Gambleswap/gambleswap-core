@@ -6,19 +6,18 @@ import { parseEther, formatEther} from "ethers/lib/utils";
 const BigNumber = require('big-number');
 
 async function main() {
-    const {factoryOwnerAddress, gmbAddress} = await getNamedAccounts()
+    const {lpAddress} = await getNamedAccounts()
 
     console.log("==========================================================================================");
-    console.log(`Factory owner: ${factoryOwnerAddress}`);
-    console.log(`Start deploying contracts/GambleswapFactory.sol:GambleswapFactory`);
+    console.log(`GMB admin: ${lpAddress}`);
+    console.log(`Start deploying contracts/GMB.sol:GMB`);
     console.log("==========================================================================================");
 
-    const factoryFactory = await getContractFactory("contracts/GambleswapFactory.sol:GambleswapFactory");
+    const gmbFactory = await getContractFactory("contracts/GMB.sol:GMBToken");
 
-    const factory = await factoryFactory.connect(await getSigner(factoryOwnerAddress)).deploy(factoryOwnerAddress, gmbAddress);
+    const gmb = await gmbFactory.connect(await getSigner(lpAddress)).deploy(400000);
 
-
-    console.log(`Factory has been deployed at ${factory.address}`);
+    console.log(`GMB has been deployed at ${gmb.address}`);
 }
 
 
