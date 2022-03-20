@@ -10,12 +10,11 @@ async function main() {
 
     console.log("==========================================================================================");
     console.log(`Factory owner: ${factoryOwnerAddress}`);
-    console.log(`Start deploying contracts/UniswapV2Factory.sol:UniswapV2Factory`);
+    console.log(`Start deploying contracts/GambleswapFactory.sol:GambleswapFactory`);
     console.log("==========================================================================================");
 
-    const factoryFactory = await getContractFactory("contracts/UniswapV2Factory.sol:UniswapV2Factory");
+    const factoryFactory = await getContractFactory("contracts/GambleswapFactory.sol:GambleswapFactory");
 
-    // console.log(WordListFactory);
     const factory = await factoryFactory.connect(await getSigner(factoryOwnerAddress)).deploy(factoryOwnerAddress);
 
 

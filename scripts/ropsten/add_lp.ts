@@ -1,6 +1,6 @@
-import { UniswapV2Router02__factory } from './../../types/factories/UniswapV2Router02__factory';
+import { UniswapV2Router02__factory } from './../../types/factories/GambleswapRouter__factory';
 import { IERC20__factory } from './../../types/factories/IERC20__factory';
-import { UniswapV2Router02 } from './../../types/UniswapV2Router02'
+import { UniswapV2Router02 } from './../../types/GambleswapRouter'
 import { IERC20 } from '../../types';
 import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
@@ -12,7 +12,7 @@ async function main() {
 
     console.log("==========================================================================================\n");
 
-    const router:UniswapV2Router02 = await UniswapV2Router02__factory.connect(routerAddress, await getSigner(lpAddress))
+    const router:UniswapV2Router02 = await UniswapRouter__factory.connect(routerAddress, await getSigner(lpAddress))
     const rad:IERC20 = await IERC20__factory.connect(tokenAddress1, await getSigner(lpAddress))
     const dni:IERC20 = await IERC20__factory.connect(tokenAddress2, await getSigner(lpAddress))
     await rad.approve(routerAddress, '9999999999999999999999')

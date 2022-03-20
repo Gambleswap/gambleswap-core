@@ -12,7 +12,7 @@ async function main() {
     console.log("\n==========================================================================================");
     console.log(`start update land 1 & 2 appraisal in  Land Registration SC`);
     console.log("==========================================================================================\n");
-    const routerFactory = await getContractFactory("contracts/UniswapV2Router02.sol:UniswapV2Router02");
+    const routerFactory = await getContractFactory("contracts/GambeswapRouter02.sol:GambleswapRouter02");
 
     const router = await routerFactory.connect(await getSigner(factoryOwnerAddress)).deploy(factoryAddress, wethAddress);
     console.log("Deployed at " + router.address)
