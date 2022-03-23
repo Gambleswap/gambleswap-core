@@ -17,6 +17,14 @@ contract Gambling {
     uint currentRound = 1;
     uint gameDuration = 2000;
 
+    function getCurrentRound() public view returns(uint) {
+        return currentRound;
+    }
+
+    function getCurrentRoundCoveragePerGMB() public view returns(uint) {
+        return games[currentRound].coveragePerGMB;
+    }
+
     struct game{
         uint winnerShare;
         WinnerData[] winners;
