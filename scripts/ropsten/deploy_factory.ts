@@ -19,6 +19,7 @@ export async function deployFactory() {
 
 
     console.log(`Factory has been deployed at ${factory.address}`);
+    return factory.address;
 }
 
 // exports deployFactory

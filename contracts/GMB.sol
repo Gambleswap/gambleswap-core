@@ -3,7 +3,7 @@
 pragma solidity ^0.8.3;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./IGMB.sol";
+import "./interfaces/IGMB.sol";
 
 contract GMBToken is ERC20, IGMBToken {
 

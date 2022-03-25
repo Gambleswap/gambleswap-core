@@ -1,6 +1,6 @@
 pragma solidity >=0.5.16;
 
-import './IGambleswapFactory.sol';
+import './interfaces/IGambleswapFactory.sol';
 import './GambleswapPair.sol';
 
 contract GambleswapFactory is IGambleswapFactory {

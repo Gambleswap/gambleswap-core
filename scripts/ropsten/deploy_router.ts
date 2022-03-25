@@ -2,9 +2,10 @@ import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 
-export async function deployRouter() {
+export async function deployRouter(_factoryAddress=undefined) {
 
     const {factoryAddress, wethAddress, factoryOwnerAddress} = await getNamedAccounts();
+    const fA = _factoryAddress || factoryAddress
 
     console.log("==========================================================================================\n");
 
@@ -14,8 +15,9 @@ export async function deployRouter() {
     console.log("==========================================================================================\n");
     const routerFactory = await getContractFactory("contracts/GambleswapRouter.sol:GambleswapRouter");
 
-    const router = await routerFactory.connect(await getSigner(factoryOwnerAddress)).deploy(factoryAddress, wethAddress);
+    const router = await routerFactory.connect(await getSigner(factoryOwnerAddress)).deploy(fA, wethAddress);
     console.log("Deployed at " + router.address)
+    return router.address
 }
 
 

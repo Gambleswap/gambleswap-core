@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-import "./IGMB.sol";
+import "./interfaces/IGMB.sol";
+import "./interfaces/IGambling.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 pragma solidity ^0.8.3;
 
-contract Gambling {
+contract Gambling is IGambling{
 
     address gmbTokenContract;
     address admin;
@@ -83,6 +84,9 @@ contract Gambling {
         // TODO add LP lending
         require(lpAddress != address(0), "Not enough LP token");
         uint totalSupply = IERC20(lpAddress).totalSupply();
+        console.log(totalSupply / 1e4);
+        console.log(IERC20(lpAddress).balanceOf(msg.sender));
+
         IERC20(lpAddress).transferFrom(user, address(this), totalSupply / 1e4);
         
         //Send GMB tokens from the user to the gamblingContract
@@ -92,7 +96,7 @@ contract Gambling {
         games[currentRound].participants.push(ParticipationData(user, gmbToken, betValue));
     }
 
-    function _generate_random_number() public view returns(uint256) {
+    function _generate_random_number() private view returns(uint256) {
         uint256 seed = uint256(keccak256(abi.encodePacked(block.timestamp + block.difficulty +
         ((uint256(keccak256(abi.encodePacked(block.coinbase)))) / (block.timestamp)) +
         block.gaslimit + uint256(blockhash(block.number)) +
@@ -103,7 +107,7 @@ contract Gambling {
         // return (seed - ((seed / maxRandomNumber) * maxRandomNumber));
     }
 
-    function _jackpotValue() private view returns (uint) {
+    function jackpotValue() public view returns (uint) {
         uint sumOfGMBTokens = 0;
         for (uint i = 0; i < games[currentRound].participants.length; i++) {
             sumOfGMBTokens += games[currentRound].participants[i].gmbToken;
@@ -112,23 +116,23 @@ contract Gambling {
     }
 
     function _newCoverage() view private returns (uint) {
-        uint sumOfGMBTokens = _jackpotValue();
+        uint sumOfGMBTokens = jackpotValue();
         return maxRandomNumber / 4 / sumOfGMBTokens;
     }
 
-    function _correctGuess(uint betValue, uint winnerInterval, uint randomNumber)
-      public view returns(bool){
+    function correctGuess(uint betValue, uint winnerInterval, uint randomNumber, uint _maxRandomNumber)
+      public pure returns(bool){
         bool negativeOverflow = randomNumber < winnerInterval;
-        bool positiveOverflow = randomNumber + winnerInterval > maxRandomNumber;
+        bool positiveOverflow = randomNumber + winnerInterval > _maxRandomNumber;
         bool correctGuess = false;
         if(negativeOverflow) {
             uint overflowValue = winnerInterval - randomNumber;
-            correctGuess =  (betValue > (maxRandomNumber - overflowValue) && betValue <= maxRandomNumber) || 
+            correctGuess =  (betValue > (_maxRandomNumber - overflowValue) && betValue <= _maxRandomNumber) || 
                         (betValue >= 0 && betValue < (randomNumber + winnerInterval));
 
         } else if (positiveOverflow) {
-            uint overflowValue = randomNumber + winnerInterval - maxRandomNumber;
-            correctGuess =  (betValue > (randomNumber - winnerInterval) && betValue <= maxRandomNumber)  || 
+            uint overflowValue = randomNumber + winnerInterval - _maxRandomNumber;
+            correctGuess =  (betValue > (randomNumber - winnerInterval) && betValue <= _maxRandomNumber)  || 
                         (betValue >= 0 && betValue < (overflowValue));
         } else {
             correctGuess = betValue > (randomNumber - winnerInterval) && betValue < (randomNumber + winnerInterval);
@@ -144,16 +148,16 @@ contract Gambling {
             uint betValue = games[currentRound].participants[i].betValue;
             address accountAddr = games[currentRound].participants[i].addr;
             userInterval = _coveragePerGMB * games[currentRound].participants[i].gmbToken;
-            if (_correctGuess(betValue, userInterval, randomNumber)) {
+            if (correctGuess(betValue, userInterval, randomNumber, maxRandomNumber)) {
                 games[currentRound].winners.push(WinnerData(accountAddr, false));
             }
         }
         games[currentRound].coveragePerGMB = _newCoverage();
     }
 
-    function _isWinner(uint index, address addr) view public returns (bool, uint) {
+    function isWinner(uint index, address _addr) view public returns (bool, uint) {
         for (uint i = 0; i < games[index].winners.length; i++) {
-            if (games[index].winners[i].addr == addr) {
+            if (games[index].winners[i].addr == _addr) {
                 return (true, i);
             }
         }
@@ -166,29 +170,38 @@ contract Gambling {
         //TODO emit log
     }
 
-    function endGame() public onlyAdmin {
-        require(games[currentRound].participants.length > 0, "There is no participant");
-
-        uint256 randomNumber = _generate_random_number();
+    function _endGame(uint randomNumber) private {
         games[currentRound].randomNumber = randomNumber;
 
         _determine_winners(randomNumber);
 
-        uint jackpotValue = _jackpotValue();
+        uint jackpotValue = jackpotValue();
         uint tokensToBurn = jackpotValue / JackpotBurnPortion;
         if (games[currentRound].winners.length > 0) {
             games[currentRound].winnerShare =  (jackpotValue - tokensToBurn) / games[currentRound].winners.length;
         }
         IGMBToken(gmbTokenContract).burn(tokensToBurn);
         games[currentRound].finished = true;
+    }
+
+    function endGame() public onlyAdmin {
+        require(games[currentRound].participants.length > 0, "There is no participant");
+
+        uint256 randomNumber = _generate_random_number();
+        _endGame(randomNumber);
+        _newGame();
+    }
+
+    function emergencyEnd(uint _rand) public onlyAdmin {
+        _endGame(_rand);
         _newGame();
     }
 
     function claim(uint gameNumber) public returns (bool) {
-        bool isWinner;
+        bool ret;
         uint index;
-        (isWinner, index) = _isWinner(gameNumber, msg.sender);
-        require(isWinner == true, "You didn't win, You cannot claim GMB token");
+        (ret, index) = isWinner(gameNumber, msg.sender);
+        require(ret == true, "You didn't win, You cannot claim GMB token");
         require(games[gameNumber].winners[index].claimed == false, "You can claim only once");
         IERC20(gmbTokenContract).transfer(msg.sender, games[gameNumber].winnerShare);
         games[gameNumber].winners[index].claimed = true;

@@ -19,7 +19,9 @@ export async function deployPair() {
 
     const pair:GambleswapPair = GambleswapPair__factory.connect(pAdd, await getSigner(factoryOwnerAddress));
     console.log(`${await pair.changeMintingAmount(10)}`)
-    console.log(`${await factory.allPairsLength()}`)
+    console.log(`pair address: ${pAdd}`)
+
+    return pAdd
 }
 
 

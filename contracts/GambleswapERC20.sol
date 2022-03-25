@@ -1,7 +1,7 @@
 pragma solidity >=0.5.16;
 
-import './IGambleswapERC20.sol';
-import './SafeMath.sol';
+import './interfaces/IGambleswapERC20.sol';
+import './libs/SafeMath.sol';
 
 contract GambleswapERC20 is IGambleswapERC20 {
     using SafeMath for uint;

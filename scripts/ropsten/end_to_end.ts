@@ -3,7 +3,7 @@
 // import { GambleswapRouter } from './../../types/GambleswapRouter'
 // import { IERC20 } from '../../types';
 import {deployFactory} from "./deploy_factory";
-import {deployUniTokens} from "./deploy_uniTokens";
+import {deployTestTokens} from "./deploy_testTokens";
 import {deployGMB} from "./deploy_gmb";
 import {deployRouter} from "./deploy_router";
 import {addLP} from "./add_lp";
@@ -29,7 +29,7 @@ async function mineBlocks() {
 async function mainn() {
     await deployFactory()
     await mineBlocks()
-    await deployUniTokens()
+    await deployTestTokens()
     await mineBlocks()
     await deployGMB()
     await mineBlocks()
@@ -42,11 +42,11 @@ async function mainn() {
     await addLP()
     await mineBlocks()
     await swap()
-    // await mineBlocks()
-    // await claimFromLP()
-    // await mineBlocks()
-    // await addLP()
-    // await mineBlocks()
+    await mineBlocks()
+    await addLP()
+    await mineBlocks()
+    await claimFromLP()
+    await mineBlocks()
 
     // const {lpAddress, routerAddress, tokenAddress1, tokenAddress2} = await getNamedAccounts();
 

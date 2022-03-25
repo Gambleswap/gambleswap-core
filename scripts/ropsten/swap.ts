@@ -1,6 +1,6 @@
-import {GambleswapRouter, GambleswapRouter__factory, UniToken, UniToken__factory} from '../../types'
+import {GambleswapRouter, GambleswapRouter__factory, TestToken, TestToken__factory} from '../../types'
 import hre from "hardhat";
-const { ethers, getChainId, waffle, getNamedAccounts} = hre;
+const { ethers, getNamedAccounts} = hre;
 const { getSigner} = ethers;
 
 export async function swap() {
@@ -11,8 +11,8 @@ export async function swap() {
     console.log("==========================================================================================\n");
 
     const router:GambleswapRouter = GambleswapRouter__factory.connect(routerAddress, await getSigner(lpAddress));
-    const rad:UniToken = UniToken__factory.connect(tokenAddress1, await getSigner(lpAddress));
-    const dni:UniToken = UniToken__factory.connect(tokenAddress2, await getSigner(lpAddress));
+    const rad:TestToken = TestToken__factory.connect(tokenAddress1, await getSigner(lpAddress));
+    const dni:TestToken = TestToken__factory.connect(tokenAddress2, await getSigner(lpAddress));
     await rad.approve(routerAddress, '9999999999999999999999')
     await dni.approve(routerAddress, '9999999999999999999999')
     console.log(`before: ${await rad.balanceOf(lpAddress)} ${await dni.balanceOf(lpAddress)}`)

@@ -1,14 +1,14 @@
 pragma solidity >=0.5.16;
 
-import './IGambleswapPair.sol';
+import './interfaces/IGambleswapPair.sol';
 import './GambleswapERC20.sol';
-import './Math.sol';
-import './UQ112x112.sol';
-import './IERC20.sol';
+import './libs/Math.sol';
+import './libs/UQ112x112.sol';
+import './interfaces/IERC20.sol';
 import "hardhat/console.sol";
-import './IGambleswapFactory.sol';
-import './IGambleswapCallee.sol';
-import './IGMB.sol';
+import './interfaces/IGambleswapFactory.sol';
+import './interfaces/IGambleswapCallee.sol';
+import './interfaces/IGMB.sol';
 
 contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     using SafeMath  for uint;

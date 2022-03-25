@@ -5,9 +5,9 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0;
 
-import './IERC20.sol';
+import './interfaces/IERC20.sol';
 
-contract UniToken is IERC20{
+contract TestToken is IERC20{
     string public override  name;
     string public override  symbol;
     string constant public standard = "v2.0";
