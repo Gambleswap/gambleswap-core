@@ -84,8 +84,6 @@ contract Gambling is IGambling{
         // TODO add LP lending
         require(lpAddress != address(0), "Not enough LP token");
         uint totalSupply = IERC20(lpAddress).totalSupply();
-        console.log(totalSupply / 1e4);
-        console.log(IERC20(lpAddress).balanceOf(msg.sender));
 
         IERC20(lpAddress).transferFrom(user, address(this), totalSupply / 1e4);
         

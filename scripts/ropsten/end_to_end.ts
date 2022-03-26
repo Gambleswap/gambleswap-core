@@ -8,12 +8,12 @@ import {deployGMB} from "./deploy_gmb";
 import {deployRouter} from "./deploy_router";
 import {addLP} from "./add_lp";
 import {deployPair} from "./deploy_pair";
+import {deployGambling} from "./deploy_gambling";
 import {addAuthorisedPool} from "./add_authorised_pool";
 import {claimFromLP} from "./claim_from_lp";
 import {swap} from "./swap";
+import {participate} from "./participate"
 import hre from "hardhat";
-const { ethers, getNamedAccounts} = hre;
-const { getSigner } = ethers;
 
 async function mineBlocks() {
     let blockNumber = 3;
@@ -33,6 +33,8 @@ async function mainn() {
     await mineBlocks()
     await deployGMB()
     await mineBlocks()
+    await deployGambling()
+    await mineBlocks()
     await deployRouter()
     await mineBlocks()
     await deployPair()
@@ -47,20 +49,8 @@ async function mainn() {
     await mineBlocks()
     await claimFromLP()
     await mineBlocks()
-
-    // const {lpAddress, routerAddress, tokenAddress1, tokenAddress2} = await getNamedAccounts();
-
-    // console.log("==========================================================================================\n");
-
-    // const router:GambleswapRouter = await GambleswapRouter__factory.connect(routerAddress, await getSigner(lpAddress))
-    // const rad:IERC20 = await IERC20__factory.connect(tokenAddress1, await getSigner(lpAddress))
-    // const dni:IERC20 = await IERC20__factory.connect(tokenAddress2, await getSigner(lpAddress))
-    // await rad.approve(routerAddress, '9999999999999999999999')
-    // await dni.approve(routerAddress, '9999999999999999999999')
-    // await router.addLiquidity(tokenAddress1, tokenAddress2,
-    //         '2000000000000000000', '2000000000000000000', 
-    //         '2000000000000000000', '2000000000000000000', 
-    //         lpAddress, 1746692432, {gasLimit: 2100000})
+    await participate()
+    await mineBlocks()
 }
 
 

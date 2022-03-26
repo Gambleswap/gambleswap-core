@@ -16,6 +16,7 @@ const LP_ADDRESS = process.env.LP_ADDRESS
 const TOKEN_ADDRESS_1 = process.env.TOKEN_ADDRESS_1
 const TOKEN_ADDRESS_2 = process.env.TOKEN_ADDRESS_2
 const GMB_ADDRESS = process.env.GMB_ADDRESS
+const GAMBLING_ADDRESS = process.env.GAMBLING_ADDRESS
 const config =  {
   solidity: {
     version: "0.8.13",
@@ -84,6 +85,9 @@ const config =  {
     },
     gmbAddress: {
       default: GMB_ADDRESS
+    },
+    gamblingAddress: {
+      default: GAMBLING_ADDRESS
     }
   },
 };

@@ -1,3 +1,5 @@
+const {GMBToken__factory, GambleswapPair__factory} = require ("../types")
+
 const {expect} = require("chai");
 const {ethers, getNamedAccounts} = require("hardhat");
 const {deployFactory} = require("../scripts/ropsten/deploy_factory");
@@ -9,6 +11,7 @@ const {deployPair} = require("../scripts/ropsten/deploy_pair");
 const {addAuthorisedPool} = require("../scripts/ropsten/add_authorised_pool");
 const {claimFromLP} = require("../scripts/ropsten/claim_from_lp");
 const {swap} = require("../scripts/ropsten/swap");
+const { getSigner } = ethers;
 
 async function mineBlocks() {
     let blockNumber = 200;
@@ -29,16 +32,19 @@ describe("Gambling Contract", function () {
     let routerAddress
     let factoryAddress;
     let _lpAddress
+    let gmb;
     let _factoryOwnerAddress
     let lp
     let tokenAAddress
     let tokenBAddress
 
-    before(async () => {
+    beforeEach(async () => {        
+        await hre.network.provider.send("hardhat_reset")
         const {factoryOwnerAddress, lpAddress} = await getNamedAccounts();
 
         _lpAddress = lpAddress
         _factoryOwnerAddress = factoryAddress
+        lp = await ethers.getSigner(_lpAddress)
         
         // const GMB = await ethers.getContractFactory("GMBToken");
         // GMBContract = await GMB.deploy(100000);
@@ -51,7 +57,8 @@ describe("Gambling Contract", function () {
         tokenBAddress = tokens[1]
         await mineBlocks()
         GMBAddress = await deployGMB(_lpAddress)
-        await mineBlocks
+        gmb = GMBToken__factory.connect(GMBAddress, lp)
+        await mineBlocks()
 
         const Gambling = await ethers.getContractFactory("Gambling");
         gambling = await Gambling.deploy(GMBAddress);
@@ -63,7 +70,12 @@ describe("Gambling Contract", function () {
         await mineBlocks()
         await addAuthorisedPool(pairAddress)
         await mineBlocks()
-        lp = await ethers.getSigner(_lpAddress)
+
+        await gmb.connect(lp).approve(gambling.address, '9999999999999999999999999999999999999999')
+    
+        const pair = await GambleswapPair__factory.connect(pairAddress, lp)
+        await pair.connect(lp).approve(gambling.address, '9999999999999999999999999999999999999999')
+
       });
     
     it("A user cannot participate with zero GMB token", async function () {
@@ -75,35 +87,41 @@ describe("Gambling Contract", function () {
         await expect(gambling.connect(lp).participate(0, 1)).to.be.reverted;
     });
 
-    // it("A user cannot participate with less GMB token in his/her account than the one mentioned for participation", async function () {
-    //     await expect(gambling.connect(lp).participate(1, 1)).to.be.reverted;
-    // });
-
-    it("A user can participate if everything is ok", async function () {
-        await addLP(_lpAddress, routerAddress, tokenAAddress, tokenBAddress)
-        await mineBlocks()
-        // await GMBContract.transfer(user1.address, 100);
-        await expect(await gambling.connect(lp).participate(1, 1)).not.to.be.reverted;
+    it("A user cannot participate with less GMB token in his/her account than the one mentioned for participation", async function () {
+        await expect(gambling.connect(lp).participate(1, 1)).to.be.reverted;
     });
 
-    // it("A user cannot participate more than once", async function () {
-    //     await GMBContract.transfer(user1.address, 100);
-    //     await expect(gamblingContract.connect(user1).participate(1, 1)).not.to.be.reverted;
-    //     await expect(gamblingContract.connect(user1).participate(1, 1)).to.be.reverted;
-    // });
+    it("A user can participate if everything is ok", async function () {
+        await addLP(lp.address, routerAddress, tokenAAddress, tokenBAddress)
+        await mineBlocks()
+        // await GMBContract.transfer(user1.address, 100);
+        await expect(gambling.connect(lp).participate(1, 1)).not.to.be.reverted;
+    });
 
-    // it("GMB token decrease from user account after participation", async function () {
-    //     await GMBContract.transfer(user1.address, 100);
-    //     await gamblingContract.connect(user1).participate(10, 1);
-    //     expect(await GMBContract.balanceOf(user1.address)).to.be.equal(90);
-    // });
+    it("A user cannot participate more than once", async function () {
+        // await GMBContract.transfer(user1.address, 100);
+        await addLP(lp.address, routerAddress, tokenAAddress, tokenBAddress)
+        await mineBlocks()
+        await expect(gambling.connect(lp).participate(1, 1)).not.to.be.reverted;
+        await expect(gambling.connect(lp).participate(1, 1)).to.be.reverted;
+    });
+
+    it("GMB token decrease from user account after participation", async function () {
+        await addLP(lp.address, routerAddress, tokenAAddress, tokenBAddress)
+        await mineBlocks()
+        let beforeAmount = await gmb.balanceOf(lp.address)
+        console.log(beforeAmount)
+        await gambling.connect(lp).participate(10, 1);
+        console.log(await gmb.balanceOf(lp.address))
+        expect(await gmb.balanceOf(lp.address)).to.be.lessThan(beforeAmount);
+    });
 
     // it("Only admin can call endTurn", async function () {
-    //     await expect(gamblingContract.connect(user1).endTurn()).to.be.reverted;
+    //     await expect(gambling.connect(lp).endTurn()).to.be.reverted;
     // });
 
     // it("endTurn cannot be executed without any participant", async function () {
-    //     await expect(gamblingContract.endTurn()).to.be.reverted;
+    //     await expect(gambling.endTurn()).to.be.reverted;
     // });
 
     // it("endTurn should be worked if everything is fine", async function () {
