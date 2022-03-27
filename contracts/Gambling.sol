@@ -41,14 +41,10 @@ contract Gambling is IGambling{
         address addr;
         uint gmbToken;
         uint betValue;
-        uint lpLockedAmount;
-        address lpAddress;
     }
     struct WinnerData {
         address addr;
-        uint lpLockedAmount;
-        address lpAddress;
-        bool claimed;
+        bool claimed; 
     }
 
     mapping (uint=>game) games;
@@ -88,15 +84,14 @@ contract Gambling is IGambling{
         // TODO add LP lending
         require(lpAddress != address(0), "Not enough LP token");
         uint totalSupply = IERC20(lpAddress).totalSupply();
-        uint lpLockedAmount = totalSupply / 1e4;
 
-        IERC20(lpAddress).transferFrom(user, address(this), lpLockedAmount);
+        IERC20(lpAddress).transferFrom(user, address(this), totalSupply / 1e4);
         
         //Send GMB tokens from the user to the gamblingContract
         IERC20(gmbTokenContract).transferFrom(msg.sender, address(this), gmbToken);
 
         games[currentRound].isParticipated[user] = true;
-        games[currentRound].participants.push(ParticipationData(user, gmbToken, betValue, lpLockedAmount, lpAddress));
+        games[currentRound].participants.push(ParticipationData(user, gmbToken, betValue));
     }
 
     function _generate_random_number() private view returns(uint256) {
@@ -106,16 +101,16 @@ contract Gambling is IGambling{
         ((uint256(keccak256(abi.encodePacked(msg.sender)))) / (block.timestamp)) +
         block.number)));
 
-        return (seed - ((seed / maxRandomNumber) * maxRandomNumber));
+        return 20;
+        // return (seed - ((seed / maxRandomNumber) * maxRandomNumber));
     }
 
     function jackpotValue() public view returns (uint) {
-        return IERC20(gmbTokenContract).balanceOf(address(this));
-        // uint sumOfGMBTokens = 0;
-        // for (uint i = 0; i < games[currentRound].participants.length; i++) {
-        //     sumOfGMBTokens += games[currentRound].participants[i].gmbToken;
-        // }
-        // return sumOfGMBTokens;
+        uint sumOfGMBTokens = 0;
+        for (uint i = 0; i < games[currentRound].participants.length; i++) {
+            sumOfGMBTokens += games[currentRound].participants[i].gmbToken;
+        }
+        return sumOfGMBTokens;
     }
 
     function _newCoverage() view private returns (uint) {
@@ -151,12 +146,11 @@ contract Gambling is IGambling{
             uint betValue = games[currentRound].participants[i].betValue;
             address accountAddr = games[currentRound].participants[i].addr;
             userInterval = _coveragePerGMB * games[currentRound].participants[i].gmbToken;
-            uint userLpLockedAmount = games[currentRound].participants[i].lpLockedAmount;
-            address userLpAddress = games[currentRound].participants[i].lpAddress;
             if (correctGuess(betValue, userInterval, randomNumber, maxRandomNumber)) {
-                games[currentRound].winners.push(WinnerData(accountAddr, userLpLockedAmount, userLpAddress, false));
+                games[currentRound].winners.push(WinnerData(accountAddr, false));
             }
         }
+        games[currentRound].coveragePerGMB = _newCoverage();
     }
 
     function isWinner(uint index, address _addr) view public returns (bool, uint) {
@@ -174,28 +168,17 @@ contract Gambling is IGambling{
         //TODO emit log
     }
 
-    function burning_game(uint i) public pure returns (bool) {
-        return i % 4 == 0;
-    }
-
     function _endGame(uint randomNumber) private {
         games[currentRound].randomNumber = randomNumber;
 
         _determine_winners(randomNumber);
-        games[currentRound].coveragePerGMB = _newCoverage();
 
         uint jackpotValue = jackpotValue();
         uint tokensToBurn = jackpotValue / JackpotBurnPortion;
         if (games[currentRound].winners.length > 0) {
             games[currentRound].winnerShare =  (jackpotValue - tokensToBurn) / games[currentRound].winners.length;
         }
-        if (burning_game(currentRound)) {
-            uint balance = IERC20(gmbTokenContract).balanceOf(address(this));
-            IGMBToken(gmbTokenContract).burn(balance);
-        }
-        else {
-            IGMBToken(gmbTokenContract).burn(tokensToBurn);
-        }
+        IGMBToken(gmbTokenContract).burn(tokensToBurn);
         games[currentRound].finished = true;
     }
 
@@ -219,7 +202,6 @@ contract Gambling is IGambling{
         require(ret == true, "You didn't win, You cannot claim GMB token");
         require(games[gameNumber].winners[index].claimed == false, "You can claim only once");
         IERC20(gmbTokenContract).transfer(msg.sender, games[gameNumber].winnerShare);
-        IERC20(games[gameNumber].winners[index].lpAddress).transfer(msg.sender, games[gameNumber].winners[index].lpLockedAmount);
         games[gameNumber].winners[index].claimed = true;
         return true;
     }
