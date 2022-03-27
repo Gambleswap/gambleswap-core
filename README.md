@@ -6,7 +6,6 @@ Contents of the .env file at the end must be:
 INFURA_API_KEY=
 MNEMONIC=
 ETHERSCAN_API=
-USER_ADDRESS=
 FACTORY_ADDRESS=
 PAIR_ADDRESS=
 WETH_ADDRESS=
@@ -17,5 +16,7 @@ LP_PRIVATE_KEY=
 LP_ADDRESS=
 TOKEN_ADDRESS_1=
 TOKEN_ADDRESS_2=
+GMB_ADDRESS=
+GAMBLING_ADDRESS=
 ```
 (Fill each entry based on your local/ropsten environment)
