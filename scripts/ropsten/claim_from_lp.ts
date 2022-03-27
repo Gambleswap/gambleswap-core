@@ -4,22 +4,22 @@ import hre from "hardhat";
 const { ethers, getChainId, waffle, getNamedAccounts} = hre;
 const { getSigner} = ethers;
 
-export async function claimFromLP() {
+export async function claimFromLP(_pairAddress=undefined, _lpAddress=undefined, _gmbAddress=undefined) {
 
     const {pairAddress, lpAddress, gmbAddress} = await getNamedAccounts();
+
+    let pA = _pairAddress || pairAddress
+    let lpA = _lpAddress || lpAddress
+    let gmbA = _gmbAddress || gmbAddress
 
     console.log(lpAddress);
     console.log("==========================================================================================\n");
 
-    const pair:GambleswapPair = GambleswapPair__factory.connect(pairAddress, await getSigner(lpAddress));
-    const gmb:GMBToken = GMBToken__factory.connect(gmbAddress, await getSigner(lpAddress));
-    console.log(`before: ${await gmb.balanceOf(lpAddress)}`)
-    let tx = await pair.claimGMB(lpAddress);
-    // let receipt = await tx.wait();
-
-//   const event = rc.events.find(event => event.event === 'Transfer');
-    // console.log(receipt);
-    console.log(`after: ${await gmb.balanceOf(lpAddress)}`)
+    const pair:GambleswapPair = GambleswapPair__factory.connect(pA, await getSigner(lpA));
+    const gmb:GMBToken = GMBToken__factory.connect(gmbA, await getSigner(lpA));
+    console.log(`before: ${await gmb.balanceOf(lpA)}`)
+    await pair.claimGMB(lpA);
+    console.log(`after: ${await gmb.balanceOf(lpA)}`)
 }
 
 

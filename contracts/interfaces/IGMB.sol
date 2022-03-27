@@ -14,7 +14,7 @@ interface IGMBToken {
 
     function mint(address account, uint256 amount) external;
 
-    function setGamblingContractAddess(address addr) external;
+    function setGamblingContractAddress(address addr) external;
 
     function burn(uint amount) external;
 

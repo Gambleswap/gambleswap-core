@@ -4,6 +4,7 @@ pragma solidity ^0.8.3;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./interfaces/IGMB.sol";
+import "hardhat/console.sol";
 
 contract GMBToken is ERC20, IGMBToken {
 
@@ -22,12 +23,14 @@ contract GMBToken is ERC20, IGMBToken {
     }
 
     modifier onlyGamblingContract {
+        console.log(msg.sender);
         require(msg.sender == gamblingContract, "Only the GambleContract can call this function");
         _;
     }
 
     modifier onlyAuthorizedPools {
         bool isAuthorized = false;
+        console.log(msg.sender);
         for(uint i=0; i<authorisedPools.length; i++) {
             if(authorisedPools[i] == msg.sender) {
                 isAuthorized = true;
@@ -37,7 +40,7 @@ contract GMBToken is ERC20, IGMBToken {
         _;
     }
 
-    function setGamblingContractAddess(address addr) override external onlyAdmin {
+    function setGamblingContractAddress(address addr) override external onlyAdmin {
         gamblingContract = addr;
     }
 

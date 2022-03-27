@@ -11,6 +11,7 @@ const {deployPair} = require("../scripts/ropsten/deploy_pair");
 const {addAuthorisedPool} = require("../scripts/ropsten/add_authorised_pool");
 const {claimFromLP} = require("../scripts/ropsten/claim_from_lp");
 const {swap} = require("../scripts/ropsten/swap");
+const { deployGambling } = require("../scripts/ropsten/deploy_gambling");
 const { getSigner } = ethers;
 
 async function mineBlocks() {
@@ -60,8 +61,8 @@ describe("Gambling Contract", function () {
         gmb = GMBToken__factory.connect(GMBAddress, lp)
         await mineBlocks()
 
-        const Gambling = await ethers.getContractFactory("Gambling");
-        gambling = await Gambling.deploy(GMBAddress);
+        gambling = await deployGambling(GMBAddress, _lpAddress)
+        await mineBlocks()
 
         await mineBlocks()
         routerAddress = await deployRouter()
@@ -109,33 +110,37 @@ describe("Gambling Contract", function () {
     it("GMB token decrease from user account after participation", async function () {
         await addLP(lp.address, routerAddress, tokenAAddress, tokenBAddress)
         await mineBlocks()
-        let beforeAmount = await gmb.balanceOf(lp.address)
-        console.log(beforeAmount)
+        let beforeAmount = await gmb.balanceOf(_lpAddress)
         await gambling.connect(lp).participate(10, 1);
-        console.log(await gmb.balanceOf(lp.address))
-        expect(await gmb.balanceOf(lp.address)).to.be.lessThan(beforeAmount);
+        let afterNumber = await gmb.balanceOf(_lpAddress)
+        expect(afterNumber.toNumber()).to.be.lessThan(beforeAmount.toNumber());
     });
 
-    // it("Only admin can call endTurn", async function () {
-    //     await expect(gambling.connect(lp).endTurn()).to.be.reverted;
-    // });
+    it("Only admin can call endGame", async function () {
+        await addLP(lp.address, routerAddress, tokenAAddress, tokenBAddress)
+        await mineBlocks()
+        await gambling.connect(lp).participate(10, 1);
+        await mineBlocks()
+        await expect(gambling.connect(lp).endGame()).not.to.be.reverted;
+    });
 
-    // it("endTurn cannot be executed without any participant", async function () {
-    //     await expect(gambling.endTurn()).to.be.reverted;
-    // });
+    it("endTurn cannot be executed without any participant", async function () {
+        await expect(gambling.connect(lp).endGame()).to.be.reverted;
+    });
 
-    // it("endTurn should be worked if everything is fine", async function () {
-    //     await GMBContract.transfer(user1.address, 100);
-    //     await gamblingContract.connect(user1).participate(10, 1);
-    //     await expect(gamblingContract.endTurn()).not.to.be.reverted;
-    // });
+    it("endTurn should be worked if everything is fine", async function () {
+        await addLP(_lpAddress, routerAddress, tokenAAddress, tokenBAddress)
+        await mineBlocks()
+        // await gambling.connect(lp).participate(10, 1);
+        await claimFromLP(pairAddress, _lpAddress)
+        await gambling.connect(lp).participate(10, 1);
+        await expect(gambling.endGame()).not.to.be.reverted;
+    });
 
-    // it("correctGuess function should work properly with positive and negative overflow", async function () {
-    //     expect(await gamblingContract._correctGuess(9, 20, 990, 1000)).to.be.true;
-    //     expect(await gamblingContract._correctGuess(991, 20, 9, 1000)).to.be.true;
-    //     expect(await gamblingContract._correctGuess(490, 20, 500, 1000)).to.be.true;
-    //     expect(await gamblingContract._correctGuess(479, 20, 500, 1000)).to.be.false;
-    // });
-
-
+    it("correctGuess function should work properly with positive and negative overflow", async function () {
+        expect(await gambling.correctGuess(9, 20, 990, 1000)).to.be.true;
+        expect(await gambling.correctGuess(991, 20, 9, 1000)).to.be.true;
+        expect(await gambling.correctGuess(490, 20, 500, 1000)).to.be.true;
+        expect(await gambling.correctGuess(479, 20, 500, 1000)).to.be.false;
+    });
 });
