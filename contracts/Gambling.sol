@@ -101,8 +101,7 @@ contract Gambling is IGambling{
         ((uint256(keccak256(abi.encodePacked(msg.sender)))) / (block.timestamp)) +
         block.number)));
 
-        return 20;
-        // return (seed - ((seed / maxRandomNumber) * maxRandomNumber));
+        return (seed - ((seed / maxRandomNumber) * maxRandomNumber));
     }
 
     function jackpotValue() public view returns (uint) {
