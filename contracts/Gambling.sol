@@ -34,6 +34,7 @@ contract Gambling is IGambling{
         uint256 randomNumber;
         uint coveragePerGMB;
         bool finished;
+        uint remainingFunds;
         bool valid;
     }
 
@@ -110,12 +111,11 @@ contract Gambling is IGambling{
     }
 
     function jackpotValue() public view returns (uint) {
-        return IERC20(gmbTokenContract).balanceOf(address(this));
-        // uint sumOfGMBTokens = 0;
-        // for (uint i = 0; i < games[currentRound].participants.length; i++) {
-        //     sumOfGMBTokens += games[currentRound].participants[i].gmbToken;
-        // }
-        // return sumOfGMBTokens;
+        uint sumOfGMBTokens = 0;
+        for (uint i = 0; i < games[currentRound].participants.length; i++) {
+            sumOfGMBTokens += games[currentRound].participants[i].gmbToken;
+        }
+        return sumOfGMBTokens;
     }
 
     function _newCoverage() view private returns (uint) {
@@ -188,10 +188,19 @@ contract Gambling is IGambling{
         uint tokensToBurn = jackpotValue / JackpotBurnPortion;
         if (games[currentRound].winners.length > 0) {
             games[currentRound].winnerShare =  (jackpotValue - tokensToBurn) / games[currentRound].winners.length;
+            games[currentRound].remainingFunds = 0;
+        }
+        else {
+            games[currentRound].remainingFunds = jackpotValue - tokensToBurn;
         }
         if (burning_game(currentRound)) {
-            uint balance = IERC20(gmbTokenContract).balanceOf(address(this));
-            IGMBToken(gmbTokenContract).burn(balance);
+            uint sum = 0;
+            for (uint j = 0; j < 4; j++){
+                if (currentRound < j)
+                    break;
+                sum += games[currentRound - j].remainingFunds;
+            }
+            IGMBToken(gmbTokenContract).burn(sum);
         }
         else {
             IGMBToken(gmbTokenContract).burn(tokensToBurn);
