@@ -4,27 +4,20 @@ import "./interfaces/IGMB.sol";
 import "./interfaces/IGambling.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import './libs/Math.sol';
 
 pragma solidity ^0.8.3;
 
 contract Gambling is IGambling{
 
-    address gmbTokenContract;
-    address admin;
-    uint constant JackpotBurnPortion = 4;
-    uint QualificationThreshold = 1;
-    uint maxRandomNumber = 5000000;
-    uint initialInterval = 10;
-    uint currentRound = 1;
-    uint gameDuration = 2000;
-
-    function getCurrentRound() public view returns(uint) {
-        return currentRound;
-    }
-
-    function getCurrentRoundCoveragePerGMB() public view returns(uint) {
-        return games[currentRound].coveragePerGMB;
-    }
+    address public override gmbTokenContract;
+    address public override admin;
+    uint public override constant JackpotBurnPortion = 4;
+    uint public override QualificationThreshold = 1;
+    uint public override maxRandomNumber = 5000000000;
+    uint public override initialInterval = 10;
+    uint public override currentRound = 1;
+    uint public override gameDuration = 2000;
 
     struct game{
         uint winnerShare;
@@ -44,6 +37,7 @@ contract Gambling is IGambling{
         uint betValue;
         uint lpLockedAmount;
         address lpAddress;
+        bool lpClaimed;
     }
     struct WinnerData {
         address addr;
@@ -54,10 +48,19 @@ contract Gambling is IGambling{
 
     mapping (uint=>game) games;
 
+
+    function getCurrentRound() public override view returns(uint) {
+        return currentRound;
+    }
+
+    function getCurrentRoundCoveragePerGMB() public override view returns(uint) {
+        return games[currentRound].coveragePerGMB;
+    }
+
     constructor(address GMBContractAddr) {
         gmbTokenContract = GMBContractAddr;
         admin = msg.sender;
-        games[0].coveragePerGMB = 10;
+        games[0].coveragePerGMB = 10 * 1e12;
     }
 
     modifier onlyAdmin {
@@ -65,7 +68,7 @@ contract Gambling is IGambling{
         _;
     }
 
-    function checkLPToken(address user) public view returns (address){
+    function checkLPToken(address user) public override view returns (address){
         for(uint256 i=0; i<IGMBToken(gmbTokenContract).getAuthorisedPoolsLength(); i++) {
             address authorizePoolAddr = IGMBToken(gmbTokenContract).authorisedPools(i);
             uint256 userBalance = IERC20(authorizePoolAddr).balanceOf(user);
@@ -77,7 +80,7 @@ contract Gambling is IGambling{
         return address(0);
     } 
     
-    function participate(uint gmbToken, uint betValue) public {
+    function participate(uint gmbToken, uint betValue) public override {
         address user = msg.sender;
         require(gmbToken > 0, "GMB token must be more than zero");
         require(games[currentRound].isParticipated[user] == false, 
@@ -97,7 +100,7 @@ contract Gambling is IGambling{
         IERC20(gmbTokenContract).transferFrom(msg.sender, address(this), gmbToken);
 
         games[currentRound].isParticipated[user] = true;
-        games[currentRound].participants.push(ParticipationData(user, gmbToken, betValue, lpLockedAmount, lpAddress));
+        games[currentRound].participants.push(ParticipationData(user, gmbToken, betValue, lpLockedAmount, lpAddress, false));
     }
 
     function _generate_random_number() private view returns(uint256) {
@@ -110,47 +113,50 @@ contract Gambling is IGambling{
         return (seed - ((seed / maxRandomNumber) * maxRandomNumber));
     }
 
-    function jackpotValue() public view returns (uint) {
+    function _newCoverage() view private returns (uint) {
+        uint sumOfGMBTokens = getJackpotValue(currentRound);
+        return maxRandomNumber * 1e12 / 4 / sumOfGMBTokens;
+    }
+
+    function getJackpotValue(uint roundNumber) public override view returns (uint) {
         uint sumOfGMBTokens = 0;
-        for (uint i = 0; i < games[currentRound].participants.length; i++) {
-            sumOfGMBTokens += games[currentRound].participants[i].gmbToken;
+        for (uint i = 0; i < games[roundNumber].participants.length; i++) {
+            sumOfGMBTokens += games[roundNumber].participants[i].gmbToken;
         }
         return sumOfGMBTokens;
     }
 
-    function _newCoverage() view private returns (uint) {
-        uint sumOfGMBTokens = jackpotValue();
-        return maxRandomNumber / 4 / sumOfGMBTokens;
-    }
-
     function correctGuess(uint betValue, uint winnerInterval, uint randomNumber, uint _maxRandomNumber)
-      public pure returns(bool){
-        bool negativeOverflow = randomNumber < winnerInterval;
+      public override pure returns(bool){
+        bool underflow = randomNumber < winnerInterval;
         bool positiveOverflow = randomNumber + winnerInterval > _maxRandomNumber;
-        bool correctGuess = false;
-        if(negativeOverflow) {
+        bool res = false;
+        if(underflow) {
             uint overflowValue = winnerInterval - randomNumber;
-            correctGuess =  (betValue > (_maxRandomNumber - overflowValue) && betValue <= _maxRandomNumber) || 
+            res =  (betValue > (_maxRandomNumber - overflowValue) && betValue <= _maxRandomNumber) || 
                         (betValue >= 0 && betValue < (randomNumber + winnerInterval));
 
         } else if (positiveOverflow) {
             uint overflowValue = randomNumber + winnerInterval - _maxRandomNumber;
-            correctGuess =  (betValue > (randomNumber - winnerInterval) && betValue <= _maxRandomNumber)  || 
+            res =  (betValue > (randomNumber - winnerInterval) && betValue <= _maxRandomNumber)  || 
                         (betValue >= 0 && betValue < (overflowValue));
         } else {
-            correctGuess = betValue > (randomNumber - winnerInterval) && betValue < (randomNumber + winnerInterval);
+            res = betValue > (randomNumber - winnerInterval) && betValue < (randomNumber + winnerInterval);
         }
-        return correctGuess;
+        return res;
+    }
+
+    function getUserInterval(uint amount, uint coverage) public view returns (uint userInterval) {
+        userInterval = Math.min(coverage * amount / 1e12,  maxRandomNumber / 4);
     }
 
     //TODO: decide on maxRandomNumber and initialInterval
     function _determine_winners(uint256 randomNumber) private {
         uint _coveragePerGMB = games[currentRound - 1].coveragePerGMB;
-        uint userInterval;
         for (uint i = 0; i < games[currentRound].participants.length; i++) {
             uint betValue = games[currentRound].participants[i].betValue;
             address accountAddr = games[currentRound].participants[i].addr;
-            userInterval = _coveragePerGMB * games[currentRound].participants[i].gmbToken;
+            uint userInterval = getUserInterval(games[currentRound].participants[i].gmbToken, _coveragePerGMB);
             uint userLpLockedAmount = games[currentRound].participants[i].lpLockedAmount;
             address userLpAddress = games[currentRound].participants[i].lpAddress;
             if (correctGuess(betValue, userInterval, randomNumber, maxRandomNumber)) {
@@ -159,7 +165,7 @@ contract Gambling is IGambling{
         }
     }
 
-    function isWinner(uint index, address _addr) view public returns (bool, uint) {
+    function isWinner(uint index, address _addr) view override public returns (bool, uint) {
         for (uint i = 0; i < games[index].winners.length; i++) {
             if (games[index].winners[i].addr == _addr) {
                 return (true, i);
@@ -174,7 +180,7 @@ contract Gambling is IGambling{
         //TODO emit log
     }
 
-    function burning_game(uint i) public pure returns (bool) {
+    function burning_game(uint i) public override pure returns (bool) {
         return i % 4 == 0;
     }
 
@@ -184,31 +190,30 @@ contract Gambling is IGambling{
         _determine_winners(randomNumber);
         games[currentRound].coveragePerGMB = _newCoverage();
 
-        uint jackpotValue = jackpotValue();
-        uint tokensToBurn = jackpotValue / JackpotBurnPortion;
+        uint jpValue = getJackpotValue(currentRound);
+        uint tokensToBurn = jpValue / JackpotBurnPortion;
         if (games[currentRound].winners.length > 0) {
-            games[currentRound].winnerShare =  (jackpotValue - tokensToBurn) / games[currentRound].winners.length;
+            games[currentRound].winnerShare =  (jpValue - tokensToBurn) / games[currentRound].winners.length;
             games[currentRound].remainingFunds = 0;
         }
         else {
-            games[currentRound].remainingFunds = jackpotValue - tokensToBurn;
-        }
-        if (burning_game(currentRound)) {
-            uint sum = 0;
-            for (uint j = 0; j < 4; j++){
-                if (currentRound < j)
-                    break;
-                sum += games[currentRound - j].remainingFunds;
+            games[currentRound].remainingFunds = jpValue - tokensToBurn;
+            if (burning_game(currentRound)) {
+                uint sum = 0;
+                for (uint j = 1; j < 4; j++){
+                    if (currentRound < j)
+                        break;
+                    sum += games[currentRound - j].remainingFunds;
+                    games[currentRound - j].remainingFunds = 0;
+                }
+                IGMBToken(gmbTokenContract).burn(sum);
             }
-            IGMBToken(gmbTokenContract).burn(sum);
         }
-        else {
-            IGMBToken(gmbTokenContract).burn(tokensToBurn);
-        }
+        IGMBToken(gmbTokenContract).burn(tokensToBurn);
         games[currentRound].finished = true;
     }
 
-    function endGame() public onlyAdmin {
+    function endGame() public override onlyAdmin {
         require(games[currentRound].participants.length > 0, "There is no participant");
 
         uint256 randomNumber = _generate_random_number();
@@ -216,20 +221,48 @@ contract Gambling is IGambling{
         _newGame();
     }
 
-    function emergencyEnd(uint _rand) public onlyAdmin {
+    function emergencyEnd(uint _rand) public override onlyAdmin {
         _endGame(_rand);
         _newGame();
     }
 
-    function claim(uint gameNumber) public returns (bool) {
+    function claimLP(uint gameNumber) public override {
+        bool ret;
+        (ret, ) = isWinner(gameNumber, msg.sender);
+        require(ret == false, "You won. Should use claimPrize instead");
+        bool flag = false;
+        for (uint i=0; i < games[gameNumber].participants.length; i++) {
+            if (games[gameNumber].participants[i].addr == msg.sender) {
+                require(!games[gameNumber].participants[i].lpClaimed, "You already claimd your LP tokens.");
+                flag = true;
+                IERC20(games[gameNumber].participants[i].lpAddress).transfer(msg.sender, games[gameNumber].participants[i].lpLockedAmount);
+                games[gameNumber].participants[i].lpClaimed = true;
+                return;
+            }
+        }
+        revert("You didn't participated in this round.");
+    }
+
+    function _forwardPreviousRoundsPrize(uint round, address to) internal{
+        uint total = 0;
+        for (uint i = 1; i < 4 && round - i > 0; i++){
+            if (games[round - i].winners.length == 0)
+                total += games[round - i].remainingFunds;
+            else
+                break;
+        }
+        IERC20(gmbTokenContract).transfer(to, total/games[round].winners.length);
+    }
+
+    function claimPrize(uint round) public override {
         bool ret;
         uint index;
-        (ret, index) = isWinner(gameNumber, msg.sender);
+        (ret, index) = isWinner(round, msg.sender);
         require(ret == true, "You didn't win, You cannot claim GMB token");
-        require(games[gameNumber].winners[index].claimed == false, "You can claim only once");
-        IERC20(gmbTokenContract).transfer(msg.sender, games[gameNumber].winnerShare);
-        IERC20(games[gameNumber].winners[index].lpAddress).transfer(msg.sender, games[gameNumber].winners[index].lpLockedAmount);
-        games[gameNumber].winners[index].claimed = true;
-        return true;
+        require(games[round].winners[index].claimed == false, "You can claim only once");
+        games[round].winners[index].claimed = true;
+        IERC20(gmbTokenContract).transfer(msg.sender, games[round].winnerShare);
+        IERC20(games[round].winners[index].lpAddress).transfer(msg.sender, games[round].winners[index].lpLockedAmount);
+        _forwardPreviousRoundsPrize(round, msg.sender);
     }
 }
