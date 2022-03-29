@@ -192,15 +192,16 @@ contract Gambling is IGambling{
 
         uint jpValue = getJackpotValue(currentRound);
         uint tokensToBurn = jpValue / JackpotBurnPortion;
+        games[currentRound].remainingFunds = getJackpotValue(currentRound) - tokensToBurn;
+        console.log(burning_game(currentRound));
         if (games[currentRound].winners.length > 0) {
             games[currentRound].winnerShare =  (jpValue - tokensToBurn) / games[currentRound].winners.length;
             games[currentRound].remainingFunds = 0;
         }
         else {
-            games[currentRound].remainingFunds = jpValue - tokensToBurn;
             if (burning_game(currentRound)) {
                 uint sum = 0;
-                for (uint j = 1; j < 4; j++){
+                for (uint j = 0; j < 4; j++){
                     if (currentRound < j)
                         break;
                     sum += games[currentRound - j].remainingFunds;
@@ -246,8 +247,9 @@ contract Gambling is IGambling{
     function _forwardPreviousRoundsPrize(uint round, address to) internal{
         uint total = 0;
         for (uint i = 1; i < 4 && round - i > 0; i++){
-            if (games[round - i].winners.length == 0)
-                total += games[round - i].remainingFunds;
+            uint funds = games[round - i].remainingFunds;
+            if (games[round - i].winners.length == 0 && funds != 0)
+                total += funds;
             else
                 break;
         }
