@@ -1,5 +1,10 @@
 # gambleswap-core
 
+
+Gambleswap is a Constant Product Automated Market Making protocol. Liquidity providers will be given $GMB as a form of passive income and may enter into a gambling game to bet with their $GMBs. 
+The chance of winning in the game is proportional to the $GMBs each user has put in the game. Also, it's designed to have the ability to control the total supply and price of $GMB.
+
+
 Contents of the .env file at the end must be:
 
 ```
