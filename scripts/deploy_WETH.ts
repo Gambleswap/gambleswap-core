@@ -1,5 +1,5 @@
 import hre from "hardhat";
-const { ethers, getChainId, waffle, getNamedAccounts} = hre;
+const { ethers} = hre;
 const { getContractFactory } = ethers;
 
 export async function deployWETH() {

@@ -1,6 +1,6 @@
 import hre from "hardhat";
-import { GMBToken__factory } from './../../types/factories/GMBToken__factory';
-import { GMBToken } from './../../types/GMBToken'
+import { GMBToken__factory } from './../types/factories/GMBToken__factory';
+import { GMBToken } from './../types/GMBToken'
 const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 const BigNumber = require('big-number');

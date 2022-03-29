@@ -2,16 +2,16 @@ const {GMBToken__factory, GambleswapPair__factory} = require ("../types")
 
 const {expect} = require("chai");
 const {ethers, getNamedAccounts} = require("hardhat");
-const {deployFactory} = require("../scripts/ropsten/deploy_factory");
-const {deployTestTokens} = require("../scripts/ropsten/deploy_testTokens");
-const {deployGMB} = require("../scripts/ropsten/deploy_gmb");
-const {deployRouter} = require("../scripts/ropsten/deploy_router");
-const {addLP} = require("../scripts/ropsten/add_lp");
-const {deployPair} = require("../scripts/ropsten/deploy_pair");
-const {addAuthorisedPool} = require("../scripts/ropsten/add_authorised_pool");
-const {claimFromLP} = require("../scripts/ropsten/claim_from_lp");
-const {swap} = require("../scripts/ropsten/swap");
-const { deployGambling } = require("../scripts/ropsten/deploy_gambling");
+const {deployFactory} = require("../scripts/deploy_factory");
+const {deployTestTokens} = require("../scripts/deploy_testTokens");
+const {deployGMB} = require("../scripts/deploy_gmb");
+const {deployRouter} = require("../scripts/deploy_router");
+const {addLP} = require("../scripts/add_lp");
+const {deployPair} = require("../scripts/deploy_pair");
+const {addAuthorisedPool} = require("../scripts/add_authorised_pool");
+const {claimFromLP} = require("../scripts/claim_from_lp");
+const {swap} = require("../scripts/swap");
+const { deployGambling } = require("../scripts/deploy_gambling");
 const { getSigner } = ethers;
 
 async function mineBlocks() {

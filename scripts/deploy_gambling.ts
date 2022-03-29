@@ -1,7 +1,7 @@
 import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner } = ethers;
-import { GMBToken__factory } from "../../types";
+import { GMBToken__factory } from "../types";
 
 export async function deployGambling(_gmbAddress=undefined, _lpAddress=undefined) {
     const {lpAddress, gmbAddress} = await getNamedAccounts()

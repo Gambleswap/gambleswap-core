@@ -1,7 +1,3 @@
-// import { GambleswapRouter__factory } from './../../types/factories/GambleswapRouter__factory';
-// import { IERC20__factory } from './../../types/factories/IERC20__factory';
-// import { GambleswapRouter } from './../../types/GambleswapRouter'
-// import { IERC20 } from '../../types';
 import {deployFactory} from "./deploy_factory";
 import {deployTestTokens} from "./deploy_testTokens";
 import {deployGMB} from "./deploy_gmb";

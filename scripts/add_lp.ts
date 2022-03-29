@@ -1,7 +1,7 @@
-import { GambleswapRouter__factory } from './../../types/factories/GambleswapRouter__factory';
-import { IERC20__factory } from './../../types/factories/IERC20__factory';
-import { GambleswapRouter } from './../../types/GambleswapRouter'
-import { IERC20 } from '../../types';
+import { GambleswapRouter__factory } from './../types/factories/GambleswapRouter__factory';
+import { IERC20__factory } from './../types/factories/IERC20__factory';
+import { GambleswapRouter } from './../types/GambleswapRouter'
+import { IERC20 } from '../types';
 import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner } = ethers;

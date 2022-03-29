@@ -1,6 +1,6 @@
-import {GambleswapFactory, GambleswapFactory__factory, GambleswapPair, GambleswapPair__factory} from '../../types'
+import {GambleswapFactory, GambleswapFactory__factory, GambleswapPair, GambleswapPair__factory} from '../types'
 import hre from "hardhat";
-const { ethers, getChainId, getNamedAccounts} = hre;
+const { ethers, getNamedAccounts} = hre;
 const { getSigner} = ethers;
 
 export async function deployPair() {

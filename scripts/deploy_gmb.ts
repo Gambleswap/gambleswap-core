@@ -1,9 +1,6 @@
-import { Provider } from '@ethersproject/providers';
 import hre from "hardhat";
-const { ethers, getChainId, waffle, getNamedAccounts} = hre;
+const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
-import { parseEther, formatEther} from "ethers/lib/utils";
-const BigNumber = require('big-number');
 
 export async function deployGMB(_lpAddress=undefined) {
     const {lpAddress} = await getNamedAccounts()

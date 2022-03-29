@@ -1,4 +1,4 @@
-import {GambleswapRouter, GambleswapRouter__factory, TestToken, TestToken__factory} from '../../types'
+import {GambleswapRouter, GambleswapRouter__factory, TestToken, TestToken__factory} from '../types'
 import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner} = ethers;

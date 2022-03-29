@@ -1,4 +1,4 @@
-import { Gambling__factory, GambleswapPair__factory, GMBToken__factory } from './../../types';
+import { Gambling__factory, GambleswapPair__factory, GMBToken__factory } from './../types';
 import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner} = ethers;

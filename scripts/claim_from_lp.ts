@@ -1,7 +1,7 @@
-import {GambleswapPair, GambleswapPair__factory} from '../../types'
-import {GMBToken, GMBToken__factory} from '../../types'
+import {GambleswapPair, GambleswapPair__factory} from '../types'
+import {GMBToken, GMBToken__factory} from '../types'
 import hre from "hardhat";
-const { ethers, getChainId, waffle, getNamedAccounts} = hre;
+const { ethers, getNamedAccounts} = hre;
 const { getSigner} = ethers;
 
 export async function claimFromLP(_pairAddress=undefined, _lpAddress=undefined, _gmbAddress=undefined) {
