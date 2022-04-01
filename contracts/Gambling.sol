@@ -267,4 +267,18 @@ contract Gambling is IGambling{
         IERC20(games[round].winners[index].lpAddress).transfer(msg.sender, games[round].winners[index].lpLockedAmount);
         _forwardPreviousRoundsPrize(round, msg.sender);
     }
+
+    function getGameWinners(uint roundNumber) public view override returns(address[] memory){
+        require(roundNumber < currentRound);
+        address[] memory winnerAddrs = new address[](10000);
+        for(uint i = 0; i < games[roundNumber].winners.length; i++) {
+            winnerAddrs[i] = games[roundNumber].winners[i].addr;
+        }
+        return winnerAddrs;
+    }
+
+    function getGameWinnerShare(uint roundNumber) public view override returns(uint){
+        require(roundNumber < currentRound);
+        return games[roundNumber].winnerShare;
+    }
 }
