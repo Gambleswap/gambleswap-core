@@ -54,7 +54,7 @@ contract Gambling is IGambling{
     }
 
     function getCurrentRoundCoveragePerGMB() public override view returns(uint) {
-        return games[currentRound].coveragePerGMB;
+        return games[currentRound - 1].coveragePerGMB;
     }
 
     constructor(address GMBContractAddr) {
