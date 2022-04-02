@@ -270,7 +270,7 @@ contract Gambling is IGambling{
 
     function getGameWinners(uint roundNumber) public view override returns(address[] memory){
         require(roundNumber < currentRound);
-        address[] memory winnerAddrs = new address[](10000);
+        address[] memory winnerAddrs = new address[](100);
         for(uint i = 0; i < games[roundNumber].winners.length; i++) {
             winnerAddrs[i] = games[roundNumber].winners[i].addr;
         }
