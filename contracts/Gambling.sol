@@ -268,17 +268,26 @@ contract Gambling is IGambling{
         _forwardPreviousRoundsPrize(round, msg.sender);
     }
 
-    function getGameWinners(uint roundNumber) public view override returns(address[] memory){
+    function getUserGameHistory(address user, uint roundNumber) public view override returns(UserGameHistory memory gameHistory){
         require(roundNumber < currentRound);
-        address[] memory winnerAddrs = new address[](100);
-        for(uint i = 0; i < games[roundNumber].winners.length; i++) {
-            winnerAddrs[i] = games[roundNumber].winners[i].addr;
+        bool isWon;
+        uint index;
+        (isWon, index) = isWinner(roundNumber, user);
+        gameHistory.prize = isWon ? games[roundNumber].winnerShare : 0;
+        gameHistory.claimed = games[roundNumber].winners[index].claimed;
+        gameHistory.isWon = isWon;
+        gameHistory.jackpotValue = getJackpotValue(roundNumber);
+        gameHistory.winnerNum = games[roundNumber].winners.length;
+        gameHistory.participated = games[roundNumber].isParticipated[user];
+        gameHistory.finalNumber = games[roundNumber].randomNumber;
+        ParticipationData memory participationData;
+        for(uint i = 0; i < games[roundNumber].participants.length; i++) {
+            if (games[roundNumber].participants[i].addr == user) {
+                participationData = games[roundNumber].participants[i];
+            }
         }
-        return winnerAddrs;
-    }
-
-    function getGameWinnerShare(uint roundNumber) public view override returns(uint){
-        require(roundNumber < currentRound);
-        return games[roundNumber].winnerShare;
+        gameHistory.userBetValue = participationData.betValue;
+        gameHistory.userGMB = participationData.gmbToken;
+        return gameHistory;
     }
 }

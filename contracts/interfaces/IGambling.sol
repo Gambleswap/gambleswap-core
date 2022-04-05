@@ -3,7 +3,18 @@
 pragma solidity ^0.8.3;
 
 abstract contract IGambling {
-
+  
+    struct UserGameHistory {
+        uint prize;
+        uint jackpotValue;
+        uint winnerNum;
+        uint finalNumber;
+        uint userBetValue;
+        uint userGMB;
+        bool isWon;
+        bool claimed;
+        bool participated;
+    }
 
     function gmbTokenContract() view virtual external returns(address);
     function admin() view virtual external returns(address);
@@ -39,7 +50,6 @@ abstract contract IGambling {
 
     function claimPrize(uint gameNumber) virtual public;
 
-    function getGameWinners(uint roundNumber) public view virtual returns(address[] memory);
+    function getUserGameHistory(address user, uint roundNumber) public view virtual returns(UserGameHistory memory gameHistory);
 
-    function getGameWinnerShare(uint roundNumber) public view virtual returns(uint);
 }
