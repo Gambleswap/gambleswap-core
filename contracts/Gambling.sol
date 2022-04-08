@@ -274,7 +274,7 @@ contract Gambling is IGambling{
         uint index;
         (isWon, index) = isWinner(roundNumber, user);
         gameHistory.prize = isWon ? games[roundNumber].winnerShare : 0;
-        gameHistory.claimed = games[roundNumber].winners[index].claimed;
+        gameHistory.claimed = isWon ? games[roundNumber].winners[index].claimed : false;
         gameHistory.isWon = isWon;
         gameHistory.jackpotValue = getJackpotValue(roundNumber);
         gameHistory.winnerNum = games[roundNumber].winners.length;
