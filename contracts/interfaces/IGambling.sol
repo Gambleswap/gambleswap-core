@@ -24,6 +24,7 @@ abstract contract IGambling {
     function initialInterval() view virtual external returns(uint);
     function currentRound() view virtual external returns(uint);
     function gameDuration() view virtual external returns(uint);
+    function participated(uint roundNumber, address user) view virtual external returns (bool);
 
     function getCurrentRound() virtual public view returns(uint);
 
@@ -33,7 +34,7 @@ abstract contract IGambling {
     
     function participate(uint gmbToken, uint betValue) virtual public;
 
-    function getJackpotValue(uint) virtual public view returns (uint);
+    function getJackpotValue(uint) virtual public view returns (uint, uint);
 
     function correctGuess(uint betValue, uint winnerInterval, uint randomNumber, uint _maxRandomNumber)
       virtual public pure returns(bool);

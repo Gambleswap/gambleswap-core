@@ -3,28 +3,19 @@ import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner} = ethers;
 
-export async function participate(_betValue=undefined, _gmbValue=undefined, _gamblingAddress=undefined, _user=undefined, _pairAddress=undefined, _gmbAddress=undefined) {
+export async function endGame(_number=undefined, _gamblingAddress=undefined, _user=undefined, _factoryOwnerAddress=undefined) {
 
-    const {lpAddress, gamblingAddress, pairAddress, gmbAddress} = await getNamedAccounts();
+    const {lpAddress, gamblingAddress, factoryOwnerAddress} = await getNamedAccounts();
     let gA = _gamblingAddress || gamblingAddress
     let user = _user || lpAddress
-    let pA = _pairAddress || pairAddress
-    let gmbA = _gmbAddress || gmbAddress
-    let betValue = _betValue || 40
-    let gmbValue = _gmbValue || 2000000
+    let fOA = _factoryOwnerAddress || lpAddress
+    let number = _number || 40 
 
-    
-    const gmb = await GMBToken__factory.connect(gmbA, await getSigner(user))
-    await gmb.connect(await getSigner(user)).approve(gA, '9999999999999999999999999999999999999999')
+    const gambling = await Gambling__factory.connect(gA, await getSigner(fOA))
 
-    const pair = await GambleswapPair__factory.connect(pA, await getSigner(user))
-    await pair.connect(await getSigner(user)).approve(gA, '9999999999999999999999999999999999999999')
-    
-    const gambling = await Gambling__factory.connect(gA, await getSigner(user))
+    await gambling.emergencyEnd(number)
 
-    await gambling.participate(gmbValue, betValue)
-
-    console.log("PARTICIPATED\n");
+    console.log(`Round is ended with ${number}.\n`);
     console.log("==========================================================================================\n");
 
     // const router:GambleswapRouter = GambleswapRouter__factory.connect(routerAddress, await getSigner(lpAddress));

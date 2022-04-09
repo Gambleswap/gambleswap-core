@@ -9,6 +9,8 @@ import {addAuthorisedPool} from "./add_authorised_pool";
 import {claimFromLP} from "./claim_from_lp";
 import {swap} from "./swap";
 import {participate} from "./participate"
+import {endGame} from "./end_game"
+
 import hre from "hardhat";
 
 async function mineBlocks() {
@@ -47,6 +49,7 @@ async function mainn() {
     await mineBlocks()
     await participate()
     await mineBlocks()
+    // await endGame()
 }
 
 
