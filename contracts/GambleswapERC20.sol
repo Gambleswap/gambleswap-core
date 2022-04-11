@@ -20,7 +20,7 @@ contract GambleswapERC20 is IGambleswapERC20 {
 
 
     constructor() public {
-        uint chainId=53;
+        uint chainId=31337;
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
