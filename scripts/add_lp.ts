@@ -6,14 +6,14 @@ import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner } = ethers;
 
-export async function addLP(_lpAddress=undefined, _routerAddress=undefined, _tokenA=undefined, _tokenB=undefined) {
+export async function addLP(_lpAddress:string="", _routerAddress:string="", _tokenA:string="", _tokenB:string="") {
 
     const {lpAddress, routerAddress, tokenAddress1, tokenAddress2} = await getNamedAccounts();
 
-    let lpA = _lpAddress || lpAddress
-    let rA = _routerAddress || routerAddress
-    let tA = _tokenA || tokenAddress1
-    let tB = _tokenB || tokenAddress2
+    let lpA = _lpAddress !== "" ? _lpAddress : lpAddress
+    let rA = _routerAddress !== ""? _routerAddress : routerAddress
+    let tA = _tokenA !== ""? _tokenA : tokenAddress1
+    let tB = _tokenB !== ""? _tokenB : tokenAddress2
     
     console.log("==========================================================================================\n");
 

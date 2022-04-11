@@ -4,7 +4,6 @@ import "@nomiclabs/hardhat-etherscan";
 import '@typechain/hardhat'
 import "hardhat-deploy";
 import {networks} from "./hardhat.networks";
-const USER_ADDRESS = process.env.USER_ADDRESS;
 const WORDLIST_OWNER = process.env.WORDLIST_OWNER;
 const FACTORY_OWNER_ADDRESS = process.env.FACTORY_OWNER_ADDRESS;
 const DICTIONARY_OWNER = process.env.DICTIONARY_OWNER;
@@ -17,6 +16,7 @@ const TOKEN_ADDRESS_1 = process.env.TOKEN_ADDRESS_1
 const TOKEN_ADDRESS_2 = process.env.TOKEN_ADDRESS_2
 const GMB_ADDRESS = process.env.GMB_ADDRESS
 const GAMBLING_ADDRESS = process.env.GAMBLING_ADDRESS
+const USER_ADDRESS = process.env.USER_ADDRESS
 const config =  {
   solidity: {
     version: "0.8.13",
@@ -88,6 +88,9 @@ const config =  {
     },
     gamblingAddress: {
       default: GAMBLING_ADDRESS
+    },
+    userAddress: {
+      default: USER_ADDRESS
     }
   },
 };
