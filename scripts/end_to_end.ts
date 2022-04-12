@@ -56,8 +56,8 @@ async function mainn() {
     // await mineBlocks()
     await claimFromLP()
     await mineBlocks()
-    await participate()
-    await mineBlocks()
+    // await participate()
+    // await mineBlocks()
     // await endGame()
 }
 
