@@ -12,7 +12,7 @@ export async function deployGMB(_lpAddress=undefined) {
 
     const gmbFactory = await getContractFactory("contracts/GMB.sol:GMBToken");
 
-    const gmb = await gmbFactory.connect(await getSigner(lpA)).deploy(40000000);
+    const gmb = await gmbFactory.connect(await getSigner(lpA)).deploy(0);
 
     console.log(`GMB has been deployed at ${gmb.address}`);
     return gmb.address

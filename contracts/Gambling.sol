@@ -2,6 +2,7 @@
 
 import "./interfaces/IGMB.sol";
 import "./interfaces/IGambling.sol";
+import "./interfaces/IGambleswapERC20.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import './libs/Math.sol';
@@ -54,7 +55,7 @@ contract Gambling is IGambling{
     }
 
     function getCurrentRoundCoveragePerGMB() public override view returns(uint) {
-        return games[currentRound - 1].coveragePerGMB;
+        return games[currentRound - 1].coveragePerGMB / 1e12;
     }
 
     constructor(address GMBContractAddr) {
@@ -119,7 +120,7 @@ contract Gambling is IGambling{
 
     function _newCoverage() view private returns (uint) {
         (uint sumOfGMBTokens,) = getJackpotValue(currentRound);
-        return maxRandomNumber * 1e12 / 4 / sumOfGMBTokens;
+        return maxRandomNumber * 1e12 * 1e18 / 4 / sumOfGMBTokens;
     }
 
     function getJackpotValue(uint roundNumber) public override view returns (uint currentRoundVal, uint total) {
@@ -159,7 +160,7 @@ contract Gambling is IGambling{
     }
 
     function getUserInterval(uint amount, uint coverage) public view returns (uint userInterval) {
-        userInterval = Math.min(coverage * amount / 1e12,  maxRandomNumber / 4);
+        userInterval = Math.min(coverage * amount / 1e12 / 1e18,  maxRandomNumber / 4);
     }
 
     //TODO: decide on maxRandomNumber and initialInterval
@@ -242,13 +243,11 @@ contract Gambling is IGambling{
     function claimLP(uint gameNumber) public override {
         bool ret;
         (ret, ) = isWinner(gameNumber, msg.sender);
-        require(ret == false, "You won. Should use claimPrize instead");
-        bool flag = false;
+        require(!ret, "You won. Should use claimPrize instead");
         for (uint i=0; i < games[gameNumber].participants.length; i++) {
             if (games[gameNumber].participants[i].addr == msg.sender) {
                 require(!games[gameNumber].participants[i].lpClaimed, "You already claimd your LP tokens.");
-                flag = true;
-                IERC20(games[gameNumber].participants[i].lpAddress).transfer(msg.sender, games[gameNumber].participants[i].lpLockedAmount);
+                IGambleswapERC20(games[gameNumber].participants[i].lpAddress).transfer(msg.sender, games[gameNumber].participants[i].lpLockedAmount);
                 games[gameNumber].participants[i].lpClaimed = true;
                 return;
             }

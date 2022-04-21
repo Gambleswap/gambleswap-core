@@ -30,7 +30,6 @@ contract GMBToken is ERC20, IGMBToken {
 
     modifier onlyAuthorizedPools {
         bool isAuthorized = false;
-        console.log(msg.sender);
         for(uint i=0; i<authorisedPools.length; i++) {
             if(authorisedPools[i] == msg.sender) {
                 isAuthorized = true;

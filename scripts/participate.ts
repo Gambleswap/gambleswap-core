@@ -11,9 +11,10 @@ export async function participate(_betValue=undefined, _gmbValue=undefined, _gam
     let pA = _pairAddress || pairAddress
     let gmbA = _gmbAddress || gmbAddress
     let betValue = _betValue || 40
-    let gmbValue = _gmbValue || 2000000
+    let gmbValue = _gmbValue || ethers.utils.parseUnits("200", 18)
 
     
+
     const gmb = await GMBToken__factory.connect(gmbA, await getSigner(user))
     await gmb.connect(await getSigner(user)).approve(gA, '9999999999999999999999999999999999999999')
 
@@ -22,7 +23,7 @@ export async function participate(_betValue=undefined, _gmbValue=undefined, _gam
     
     const gambling = await Gambling__factory.connect(gA, await getSigner(user))
 
-    await gambling.participate(gmbValue, betValue)
+    // await gambling.participate(gmbValue, betValue)
 
     console.log("PARTICIPATED\n");
     console.log("==========================================================================================\n");

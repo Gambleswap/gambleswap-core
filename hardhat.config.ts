@@ -43,6 +43,7 @@ const config =  {
   mocha: {
     timeout: 40000
   },
+  defaultNetwork: 'hardhat',
   networks,
   namedAccounts: {
     // deployer: {  // check on chainid https://chainid.network/

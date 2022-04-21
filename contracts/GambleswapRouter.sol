@@ -8,6 +8,7 @@ import "./interfaces/IGambleswapFactory.sol";
 import "./interfaces/IGambleswapPair.sol";
 import "./interfaces/IGambleswapERC20.sol";
 import "./interfaces/IERC20.sol";
+import "hardhat/console.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -480,13 +481,16 @@ library GambleswapLibrary {
     // calculates the CREATE2 address for a pair without making any external calls
     function pairFor(address factory, address tokenA, address tokenB) internal view returns (address pair) {
         pair = IGambleswapFactory(factory).getPair(tokenA, tokenB);
+        // console.log(pair);
+        // console.log(factory);
         // (address token0, address token1) = sortTokens(tokenA, tokenB);
         // pair = address(bytes20(keccak256(abi.encodePacked(
         //         hex'ff',
         //         factory,
         //         keccak256(abi.encodePacked(token0, token1)),
-        //         hex'96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f' // init code hash
+        //         hex'f8a95e80d705e500297233b264e9323403ba8307a3e660aecbf8b5975ec7231f' // init code hash
         //     ))));
+        // console.log(pair);
     }
 
     // fetches and sorts the reserves for a pair

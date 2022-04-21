@@ -25,11 +25,7 @@ async function mineBlocks() {
   }
 }
 
-async function mainn() {
-
-    const {lpAddress, routerAddress, tokenAddress2, gmbAddress} = await getNamedAccounts();
-    console.log(lpAddress)
-
+export async function mainn() {
 
     await deployFactory()
     await mineBlocks()
@@ -49,14 +45,14 @@ async function mainn() {
     await mineBlocks()
     await swap()
     await mineBlocks()
-    await addLP()
-    await mineBlocks()
+    // await addLP()
+    // await mineBlocks()
     await transferToUser()
     // await addLP(lpAddress, routerAddress, tokenAddress2, "0x63cf2cd54fe91e3545d1379abf5bfd194545259d")
     // await mineBlocks()
     await claimFromLP()
     await mineBlocks()
-    // await participate()
+    await participate()
     // await mineBlocks()
     // await endGame()
 }

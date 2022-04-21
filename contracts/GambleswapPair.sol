@@ -18,7 +18,7 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     bytes4 private constant SELECTOR = bytes4(keccak256(bytes('transfer(address,uint256)')));
 
     struct profile{
-        uint256 lastClaimBlock;
+        uint debt;
         bool valid;
     }
 
@@ -29,6 +29,9 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     address public override token1;
     address public gmb;
     uint public GMBPERBLOCK;
+    uint public gmbPerShare;
+    uint public totalGMBShare;
+    uint public lastUpdatedBlock;
 
     uint112 private reserve0;           // uses single storage slot, accessible via getReserves
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
@@ -52,7 +55,7 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     }
 
     modifier forceClaim(address user) {
-        if (profiles[user].valid){
+        if (balanceOf[user] != 0){
             _claimGMB(user);
         }
         _;
@@ -91,6 +94,9 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
         token0 = _token0;
         token1 = _token1;
         gmb = _gmb;
+        gmbPerShare = 0;
+        totalGMBShare = 0;
+        lastUpdatedBlock = block.number;
     }
 
     function changeMintingAmount(uint112 amount) public{
@@ -137,31 +143,44 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
         }
     }
 
-    event MyLog (uint val, string t);
+    modifier updateGMBPerShare () {
+        if (totalSupply != 0) {
+            uint totalGMBMinted = totalSupply.mul(gmbPerShare).add((GMBPERBLOCK * (block.number - lastUpdatedBlock)));
+            gmbPerShare = totalGMBMinted / totalSupply;
+            console.log("calling update");
+            console.log(GMBPERBLOCK);
+            console.log(block.number - lastUpdatedBlock);
+            console.log(gmbPerShare);
+            console.log(totalGMBMinted);
+            lastUpdatedBlock = block.number;
+        }
+        _;
+    }
     
     function _claimGMB(address user) internal{
-        uint blocks = block.number - profiles[user].lastClaimBlock;
-        emit MyLog (blocks, "blocks");
-        uint userBalance = balanceOf[address(this)] + balanceOf[user];
-        emit MyLog (userBalance, "userBalance");
-        uint userReward = 100 + GMBPERBLOCK.mul(blocks).mul(userBalance) / totalSupply;
-        emit MyLog (GMBPERBLOCK.mul(blocks).mul(userBalance), "aval");
-        emit MyLog (totalSupply, "dovom");
-        IGMBToken(gmb).mint(user, userReward);
-        profiles[user].lastClaimBlock = block.number;
+        if (balanceOf[user] == 0)
+            return;
+        uint remaining = gmbPerShare.mul(balanceOf[user]).sub(profiles[user].debt);
+        updateDebt(user);
+        // uint allPendingGMBs = gmbPerShare.mul(totalGMBShare).add(GMBPERBLOCK.mul(block.number.sub(lastUpdatedBlock)));
+        // gmbPerShare = allPendingGMBs / totalGMBShare;
+        // uint userReward = gmbPerShare.mul(profiles[user].share) / totalGMBShare;
+        // totalGMBShare = totalGMBShare.sub(profiles[user].share);
+        // gmbPerShare = totalGMBShare/GMBPERBLOCK;
+        IGMBToken(gmb).mint(user, remaining);
     }
-    // function totalS() public view returns (uint256){
-    //     uint x = IERC20(gmb).totalSupply();
-    //     return x;
-    // }
 
-    function claimGMB(address user) lock override public{
-        require(profiles[user].valid, "Provide some liquidity before calling claim function");
-        _claimGMB(user);
+    function updateDebt(address user) override public {
+        profiles[user].debt = gmbPerShare.mul(balanceOf[user]);
+    }
+
+    function claimGMB(address user) lock updateGMBPerShare override public{
+        if(balanceOf[user] != 0)
+            _claimGMB(user);
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function mint(address to) external forceClaim(to) lock override returns (uint liquidity) {
+    function mint(address to) external updateGMBPerShare forceClaim(to) lock override returns (uint liquidity) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         uint balance0 = IERC20(token0).balanceOf(address(this));
         uint balance1 = IERC20(token1).balanceOf(address(this));
@@ -177,15 +196,36 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
             liquidity = Math.min(amount0.mul(_totalSupply) / _reserve0, amount1.mul(_totalSupply) / _reserve1);
         }
         require(liquidity > 0, 'Gambleswap: INSUFFICIENT_LIQUIDITY_MINTED');
+        uint prevBalance = balanceOf[to];
         _mint(to, liquidity);
         profiles[to].valid = true;
+        if (prevBalance == 0) {
+            profiles[to].debt = gmbPerShare*balanceOf[to];
+        }
         _update(balance0, balance1, _reserve0, _reserve1);
+
         if (feeOn) kLast = uint(reserve0).mul(reserve1); // reserve0 and reserve1 are up-to-date
+
+        // uint allPendingGMBs = gmbPerShare * totalGMBShare * (block.number - lastUpdatedBlock); // = GMBPERBLOCK * n
+        // gmbPerShare = allPendingGMBs / totalGMBShare;
+        // gmbPerShare * totalGMBShare + totalGMBShare*GMBPERBLOCK*n/(totalGMBShare + share) = 
+        // gmbPerShareNew * n * totalGMBShare = 
+        // GMBPERBLOCK * n / (totalGMBShare + share)
+
+        // => gmbPerShare * totalGMBShare = totalGMBShare * (gmbPerShareNew * n - )
+
+        // gmbPerShareNew * (totalGMBShare + share) = GMBPERBLOCK
+        // gmbPerShareNew = GMBPERBLOCK / (totalGMBShare + share);
+        // totalGMBShare*gmbPerShareNew = GMBPERBLOCK*totalGMBShare/(totalGMBShare + share);
+        // gmbPerShareNew = GMBPERBLOCK/(totalGMBShare + share)
+
+        // n * gmbPerShare * totalGMBShare = GMBPERBLOCK * n * totalGMBShare / (totalGMBShare + x);
+
         emit Mint(msg.sender, amount0, amount1);
     }
 
     // this low-level function should be called from a contract which performs important safety checks
-    function burn(address to) external forceClaim(to) lock override returns (uint amount0, uint amount1) {
+    function burn(address to) external updateGMBPerShare() forceClaim(to) lock override returns (uint amount0, uint amount1) {
         (uint112 _reserve0, uint112 _reserve1,) = getReserves(); // gas savings
         address _token0 = token0;                                // gas savings
         address _token1 = token1;                                // gas savings

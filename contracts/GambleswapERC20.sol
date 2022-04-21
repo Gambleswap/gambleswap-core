@@ -1,6 +1,7 @@
 pragma solidity >=0.5.16;
 
 import './interfaces/IGambleswapERC20.sol';
+import './interfaces/IGambleswapPair.sol';
 import './libs/SafeMath.sol';
 
 contract GambleswapERC20 is IGambleswapERC20 {
@@ -50,8 +51,12 @@ contract GambleswapERC20 is IGambleswapERC20 {
     }
 
     function _transfer(address from, address to, uint value) private {
+        IGambleswapPair(address(this)).claimGMB(from);
+        IGambleswapPair(address(this)).claimGMB(to);
         balanceOf[from] = balanceOf[from].sub(value);
         balanceOf[to] = balanceOf[to].add(value);
+        IGambleswapPair(address(this)).updateDebt(from);
+        IGambleswapPair(address(this)).updateDebt(to);
         emit Transfer(from, to, value);
     }
 
