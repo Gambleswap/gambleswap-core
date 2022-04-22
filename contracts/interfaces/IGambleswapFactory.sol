@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity >=0.5.0;
 
 interface IGambleswapFactory {
@@ -6,6 +8,8 @@ interface IGambleswapFactory {
     function feeTo() external view returns (address);
     function feeToSetter() external view returns (address);
     function gmb() external view returns (address);
+    function gambling() external view returns (address);
+    function lending() external view returns (address);
 
     function getPair(address tokenA, address tokenB) external view returns (address pair);
     function allPairs(uint) external view returns (address pair);

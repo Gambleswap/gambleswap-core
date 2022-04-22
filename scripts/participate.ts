@@ -23,7 +23,7 @@ export async function participate(_betValue=undefined, _gmbValue=undefined, _gam
     
     const gambling = await Gambling__factory.connect(gA, await getSigner(user))
 
-    // await gambling.participate(gmbValue, betValue)
+    await gambling.participate(gmbValue, betValue, false)
 
     console.log("PARTICIPATED\n");
     console.log("==========================================================================================\n");

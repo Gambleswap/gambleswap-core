@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity >=0.5.16;
 
 import './interfaces/IGambleswapERC20.sol';
 import './interfaces/IGambleswapPair.sol';
 import './libs/SafeMath.sol';
+import "hardhat/console.sol";
 
 contract GambleswapERC20 is IGambleswapERC20 {
     using SafeMath for uint;
@@ -51,12 +54,20 @@ contract GambleswapERC20 is IGambleswapERC20 {
     }
 
     function _transfer(address from, address to, uint value) private {
-        IGambleswapPair(address(this)).claimGMB(from);
-        IGambleswapPair(address(this)).claimGMB(to);
-        balanceOf[from] = balanceOf[from].sub(value);
-        balanceOf[to] = balanceOf[to].add(value);
-        IGambleswapPair(address(this)).updateDebt(from);
-        IGambleswapPair(address(this)).updateDebt(to);
+        address lending = IGambleswapPair(address(this)).lending();
+        address gambling = IGambleswapPair(address(this)).gambling();
+        if ( lending == from || lending == to || gambling == from || gambling == to) {
+            balanceOf[from] = balanceOf[from].sub(value);
+            balanceOf[to] = balanceOf[to].add(value);
+        }
+        else {
+            IGambleswapPair(address(this)).claimGMB(from);
+            IGambleswapPair(address(this)).claimGMB(to);
+            balanceOf[from] = balanceOf[from].sub(value);
+            balanceOf[to] = balanceOf[to].add(value);
+            IGambleswapPair(address(this)).updateDebt(from);
+            IGambleswapPair(address(this)).updateDebt(to);
+        }
         emit Transfer(from, to, value);
     }
 

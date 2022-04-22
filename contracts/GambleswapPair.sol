@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity >=0.5.16;
 
 import './interfaces/IGambleswapPair.sol';
@@ -27,11 +29,14 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     address public override factory;
     address public override token0;
     address public override token1;
-    address public gmb;
-    uint public GMBPERBLOCK;
-    uint public gmbPerShare;
-    uint public totalGMBShare;
-    uint public lastUpdatedBlock;
+    address public override lending;
+    address public override gmb;
+    address public override gambling;
+
+    uint public override GMBPERBLOCK;
+    uint private gmbPerShare;
+    uint private totalGMBShare;
+    uint private lastUpdatedBlock;
 
     uint112 private reserve0;           // uses single storage slot, accessible via getReserves
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
@@ -51,6 +56,11 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
 
     modifier onlyFactory() {
         require(msg.sender == factory, 'Gambleswap: FORBIDDEN'); // sufficient check
+        _;
+    }
+
+    modifier onlyFactoryAdmin() {
+        require(msg.sender == IGambleswapFactory(factory).feeToSetter(), 'Gambleswap: FORBIDDEN'); // sufficient check
         _;
     }
 
@@ -90,18 +100,18 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     }
 
     // called once by the factory at time of deployment
-    function initialize(address _token0, address _token1, address _gmb) onlyFactory override external {
+    function initialize(address _token0, address _token1, address _gmb, address _gambling, address _lending) onlyFactory override external {
         token0 = _token0;
         token1 = _token1;
         gmb = _gmb;
+        gambling = _gambling;
+        lending = _lending;
         gmbPerShare = 0;
         totalGMBShare = 0;
         lastUpdatedBlock = block.number;
     }
 
-    function changeMintingAmount(uint112 amount) public{
-        address admin = IGambleswapFactory(factory).feeToSetter();
-        require(msg.sender == admin, "only factory admin can set this");
+    function changeMintingAmount(uint112 amount) onlyFactoryAdmin public{
         GMBPERBLOCK = amount;
         emit MiningAmountChanged(amount);
     }
@@ -206,21 +216,6 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
 
         if (feeOn) kLast = uint(reserve0).mul(reserve1); // reserve0 and reserve1 are up-to-date
 
-        // uint allPendingGMBs = gmbPerShare * totalGMBShare * (block.number - lastUpdatedBlock); // = GMBPERBLOCK * n
-        // gmbPerShare = allPendingGMBs / totalGMBShare;
-        // gmbPerShare * totalGMBShare + totalGMBShare*GMBPERBLOCK*n/(totalGMBShare + share) = 
-        // gmbPerShareNew * n * totalGMBShare = 
-        // GMBPERBLOCK * n / (totalGMBShare + share)
-
-        // => gmbPerShare * totalGMBShare = totalGMBShare * (gmbPerShareNew * n - )
-
-        // gmbPerShareNew * (totalGMBShare + share) = GMBPERBLOCK
-        // gmbPerShareNew = GMBPERBLOCK / (totalGMBShare + share);
-        // totalGMBShare*gmbPerShareNew = GMBPERBLOCK*totalGMBShare/(totalGMBShare + share);
-        // gmbPerShareNew = GMBPERBLOCK/(totalGMBShare + share)
-
-        // n * gmbPerShare * totalGMBShare = GMBPERBLOCK * n * totalGMBShare / (totalGMBShare + x);
-
         emit Mint(msg.sender, amount0, amount1);
     }
 
@@ -291,5 +286,9 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     // force reserves to match balances
     function sync() external override lock {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)), reserve0, reserve1);
+    }
+
+    function setLending(address addr) onlyFactoryAdmin public override {
+        lending = addr;
     }
 }

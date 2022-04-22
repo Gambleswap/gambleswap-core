@@ -3,7 +3,7 @@ const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 
 export async function deployFactory() {
-    const {factoryOwnerAddress, gmbAddress} = await getNamedAccounts()
+    const {factoryOwnerAddress, gmbAddress, gamblingAddress, lendingAddress} = await getNamedAccounts()
 
     console.log("==========================================================================================");
     console.log(`Factory owner: ${factoryOwnerAddress}`);
@@ -12,7 +12,7 @@ export async function deployFactory() {
 
     const factoryFactory = await getContractFactory("contracts/GambleswapFactory.sol:GambleswapFactory");
 
-    const factory = await factoryFactory.connect(await getSigner(factoryOwnerAddress)).deploy(factoryOwnerAddress, gmbAddress);
+    const factory = await factoryFactory.connect(await getSigner(factoryOwnerAddress)).deploy(factoryOwnerAddress, gmbAddress, gamblingAddress, lendingAddress);
 
 
     console.log(`Factory has been deployed at ${factory.address}`);

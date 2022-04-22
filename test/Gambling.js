@@ -81,15 +81,15 @@ describe("Gambling Contract", function () {
       });
     
     it("A user cannot participate with zero GMB token", async function () {
-        await expect(gambling.connect(lp).participate(0, 1)).to.be.reverted;
+        await expect(gambling.connect(lp).participate(0, 1, false)).to.be.reverted;
     });
     
     it("A user cannot participate with not enough LP token", async function () {
-        await expect(gambling.connect(lp).participate(0, 1)).to.be.reverted;
+        await expect(gambling.connect(lp).participate(0, 1, false)).to.be.reverted;
     });
 
     it("A user cannot participate with less GMB token in his/her account than the one mentioned for participation", async function () {
-        await expect(gambling.connect(lp).participate(1, 1)).to.be.reverted;
+        await expect(gambling.connect(lp).participate(1, 1, false)).to.be.reverted;
     });
 
     it("A user can participate if everything is ok", async function () {
@@ -97,7 +97,7 @@ describe("Gambling Contract", function () {
         await addLP(lp.address, routerAddress, tokenAAddress, tokenBAddress)
         await claimFromLP();
 
-        await gambling.connect(lp).participate(1, 1)
+        await gambling.connect(lp).participate(1, 1, false)
         await mineBlocks(2)
     });
 
@@ -105,8 +105,8 @@ describe("Gambling Contract", function () {
         await addLP(lp.address, routerAddress, tokenAAddress, tokenBAddress)
         await claimFromLP();
     await mineBlocks(2)
-        await expect(gambling.connect(lp).participate(1, 1)).not.to.be.reverted;
-        await expect(gambling.connect(lp).participate(1, 1)).to.be.reverted;
+        await expect(gambling.connect(lp).participate(1, 1, false)).not.to.be.reverted;
+        await expect(gambling.connect(lp).participate(1, 1, false)).to.be.reverted;
     });
 
     it("GMB token decrease from user account after participation", async function () {
@@ -114,7 +114,7 @@ describe("Gambling Contract", function () {
         await claimFromLP();
     await mineBlocks(2)
         let beforeAmount = BigNumber(await gmb.balanceOf(_lpAddress) + "")
-        await gambling.connect(lp).participate("100000000000000000000", 100); // Consider the force claim
+        await gambling.connect(lp).participate("100000000000000000000", 100, false); // Consider the force claim
         let afterNumber = BigNumber(await gmb.balanceOf(_lpAddress) + "")
         assert(beforeAmount.gt(afterNumber), "After amount isn't less than before amount.")
         // expect(afterNumber.toNumber()).to.be.lessThan(beforeAmount.toNumber());
@@ -124,7 +124,7 @@ describe("Gambling Contract", function () {
         await addLP(lp.address, routerAddress, tokenAAddress, tokenBAddress)
         await claimFromLP();
     await mineBlocks(2)
-        await gambling.connect(lp).participate(10, 1);
+        await gambling.connect(lp).participate(10, 1, false);
     await mineBlocks(2)
         await expect(gambling.connect(lp).endGame()).not.to.be.reverted;
     });
@@ -139,7 +139,7 @@ describe("Gambling Contract", function () {
         await mineBlocks(2)
         // await gambling.connect(lp).participate(10, 1);
         await claimFromLP(pairAddress, _lpAddress)
-        await gambling.connect(lp).participate("100000000000000000000", 1);
+        await gambling.connect(lp).participate("100000000000000000000", 1, false);
         await expect(gambling.endGame()).not.to.be.reverted;
     });
 
@@ -159,12 +159,12 @@ describe("Gambling Contract", function () {
         await pair.connect(_user).approve(gambling.address, '9999999999999999999999999999999999999999')
         await gmb.connect(_user).approve(gambling.address, '9999999999999999999999999999999999999999')
 
-        await gambling.connect(_user).participate("20000000000000000000", 40);
+        await gambling.connect(_user).participate("20000000000000000000", 40, false);
 
         await mineBlocks(2)
         // await gambling.connect(lp).participate(10, 1);
         await claimFromLP(pairAddress, _lpAddress)
-        await gambling.connect(lp).participate("20000000000000000000", 1);
+        await gambling.connect(lp).participate("20000000000000000000", 1, false);
         await gambling.emergencyEnd(239);
         await gambling.connect(_user).claimPrize(1);
         await expect(gambling.connect(lp).claimPrize(1)).to.be.reverted
@@ -189,8 +189,8 @@ describe("Gambling Contract", function () {
         await claimFromLP(pairAddress, _lpAddress)
 
         // Round one
-        await gambling.connect(_user).participate(amount, 40);
-        await gambling.connect(lp).participate(amount, 1);
+        await gambling.connect(_user).participate(amount, 40, false);
+        await gambling.connect(lp).participate(amount, 1, false);
         await gambling.emergencyEnd(100041);
         await expect(gambling.connect(_user).claimPrize(1)).to.be.reverted
         await expect(gambling.connect(lp).claimPrize(1)).to.be.reverted
@@ -202,8 +202,8 @@ describe("Gambling Contract", function () {
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
         // Round two
-        await gambling.connect(_user).participate(amount, 40);
-        await gambling.connect(lp).participate(amount, 1);
+        await gambling.connect(_user).participate(amount, 40, false);
+        await gambling.connect(lp).participate(amount, 1, false);
         await gambling.emergencyEnd(626000000);
         await expect(gambling.connect(_user).claimPrize(2)).to.be.reverted
         await expect(gambling.connect(lp).claimPrize(2)).to.be.reverted
@@ -215,8 +215,8 @@ describe("Gambling Contract", function () {
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
         // Round three
-        await gambling.connect(_user).participate(amount, 75000001);
-        await gambling.connect(lp).participate(amount, 1);
+        await gambling.connect(_user).participate(amount, 75000001, false);
+        await gambling.connect(lp).participate(amount, 1, false);
         await gambling.emergencyEnd(700000000);
         await gambling.connect(_user).claimPrize(3)
         await expect(gambling.connect(lp).claimPrize(3)).to.be.reverted
@@ -243,8 +243,8 @@ describe("Gambling Contract", function () {
         await claimFromLP(pairAddress, _lpAddress)
 
         // Round one
-        await gambling.connect(_user).participate(amount, 40);
-        await gambling.connect(lp).participate(amount, 1);
+        await gambling.connect(_user).participate(amount, 40, false);
+        await gambling.connect(lp).participate(amount, 1, false);
         await gambling.emergencyEnd(100041);
         await expect(gambling.connect(_user).claimPrize(1)).to.be.reverted
         await expect(gambling.connect(lp).claimPrize(1)).to.be.reverted
@@ -256,8 +256,8 @@ describe("Gambling Contract", function () {
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
         // Round two
-        await gambling.connect(_user).participate(amount, 40);
-        await gambling.connect(lp).participate(amount, 1);
+        await gambling.connect(_user).participate(amount, 40, false);
+        await gambling.connect(lp).participate(amount, 1, false);
         await gambling.emergencyEnd(626000000);
         await expect(gambling.connect(_user).claimPrize(2)).to.be.reverted
         await expect(gambling.connect(lp).claimPrize(2)).to.be.reverted
@@ -269,8 +269,8 @@ describe("Gambling Contract", function () {
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
         // Round three
-        await gambling.connect(_user).participate(amount, 40);
-        await gambling.connect(lp).participate(amount, 1);
+        await gambling.connect(_user).participate(amount, 40, false);
+        await gambling.connect(lp).participate(amount, 1, false);
         await gambling.emergencyEnd(626000000);
         await expect(gambling.connect(_user).claimPrize(3)).to.be.reverted
         await expect(gambling.connect(lp).claimPrize(3)).to.be.reverted
@@ -282,8 +282,8 @@ describe("Gambling Contract", function () {
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
         // Round four
-        await gambling.connect(_user).participate(amount, 40);
-        await gambling.connect(lp).participate(amount, 1);
+        await gambling.connect(_user).participate(amount, 40, false);
+        await gambling.connect(lp).participate(amount, 1, false);
         await gambling.emergencyEnd(626000000);
         await expect(gambling.connect(_user).claimPrize(4)).to.be.reverted
         await expect(gambling.connect(lp).claimPrize(4)).to.be.reverted
@@ -295,8 +295,8 @@ describe("Gambling Contract", function () {
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
         // Round five
-        await gambling.connect(_user).participate(amount, 75000001);
-        await gambling.connect(lp).participate(amount, 1);
+        await gambling.connect(_user).participate(amount, 75000001, false);
+        await gambling.connect(lp).participate(amount, 1, false);
         await gambling.emergencyEnd(700000000);
         await gambling.connect(_user).claimPrize(5)
         await expect(gambling.connect(lp).claimPrize(5)).to.be.reverted

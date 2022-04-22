@@ -3,6 +3,7 @@
 import "./interfaces/IGMB.sol";
 import "./interfaces/IGambling.sol";
 import "./interfaces/IGambleswapERC20.sol";
+import "./interfaces/IGambleswapLPLending.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import './libs/Math.sol';
@@ -13,6 +14,7 @@ contract Gambling is IGambling{
 
     address public override gmbTokenContract;
     address public override admin;
+    address public override lending;
     uint public override constant JackpotBurnPortion = 4;
     uint public override QualificationThreshold = 1;
     uint public override maxRandomNumber = 5000000000;
@@ -85,22 +87,27 @@ contract Gambling is IGambling{
         return games[roundNumber].isParticipated[user];
     }
     
-    function participate(uint gmbToken, uint betValue) public override {
+    function participate(uint gmbToken, uint betValue, bool lend) public override {
         address user = msg.sender;
         require(gmbToken > 0, "GMB token must be more than zero");
         require(participated(currentRound , user) == false, 
                 "You cannot participate in gambling more than once");
         require(IERC20(gmbTokenContract).balanceOf(msg.sender) >= gmbToken, 
                 "You have insufficient GMB Token");
+        uint lpLockedAmount = 0;
+        address lpAddress = address(0);
+        if (lend) {
+            IGambleswapLPLending(lending).borrow(msg.sender);
+        }
+        else {
+            lpAddress = checkLPToken(msg.sender);
+            // TODO add LP lending
+            require(lpAddress != address(0), "Not enough LP token");
+            uint totalSupply = IERC20(lpAddress).totalSupply();
+            lpLockedAmount = totalSupply / 1e4;
 
-        address lpAddress = checkLPToken(msg.sender);
-        // TODO add LP lending
-        require(lpAddress != address(0), "Not enough LP token");
-        uint totalSupply = IERC20(lpAddress).totalSupply();
-        uint lpLockedAmount = totalSupply / 1e4;
-
-        IERC20(lpAddress).transferFrom(user, address(this), lpLockedAmount);
-        
+            IERC20(lpAddress).transferFrom(user, address(this), lpLockedAmount);
+        }
         //Send GMB tokens from the user to the gamblingContract
         IERC20(gmbTokenContract).transferFrom(msg.sender, address(this), gmbToken);
 
@@ -225,6 +232,8 @@ contract Gambling is IGambling{
         }
         IGMBToken(gmbTokenContract).burn(tokensToBurn);
         games[currentRound].finished = true;
+
+        IGambleswapLPLending(lending).refresh();
     }
 
     function endGame() public override onlyAdmin {
@@ -247,7 +256,9 @@ contract Gambling is IGambling{
         for (uint i=0; i < games[gameNumber].participants.length; i++) {
             if (games[gameNumber].participants[i].addr == msg.sender) {
                 require(!games[gameNumber].participants[i].lpClaimed, "You already claimd your LP tokens.");
-                IGambleswapERC20(games[gameNumber].participants[i].lpAddress).transfer(msg.sender, games[gameNumber].participants[i].lpLockedAmount);
+                address lp = games[gameNumber].participants[i].lpAddress;
+                if ( lp != address(0))
+                    IGambleswapERC20(lp).transfer(msg.sender, games[gameNumber].participants[i].lpLockedAmount);
                 games[gameNumber].participants[i].lpClaimed = true;
                 return;
             }
@@ -263,7 +274,9 @@ contract Gambling is IGambling{
         require(games[round].winners[index].claimed == false, "You can claim only once");
         games[round].winners[index].claimed = true;
         IERC20(gmbTokenContract).transfer(msg.sender, games[round].winnerShare);
-        IERC20(games[round].winners[index].lpAddress).transfer(msg.sender, games[round].winners[index].lpLockedAmount);
+        address lp = games[round].winners[index].lpAddress;
+        if (lp != address(0))
+            IERC20(lp).transfer(msg.sender, games[round].winners[index].lpLockedAmount);
         // _forwardPreviousRoundsPrize(round, msg.sender);
     }
 
@@ -288,5 +301,9 @@ contract Gambling is IGambling{
         gameHistory.userBetValue = participationData.betValue;
         gameHistory.userGMB = participationData.gmbToken;
         return gameHistory;
+    }
+
+    function setLending(address addr) onlyAdmin public override{
+        lending = addr;
     }
 }

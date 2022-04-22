@@ -18,6 +18,7 @@ abstract contract IGambling {
 
     function gmbTokenContract() view virtual external returns(address);
     function admin() view virtual external returns(address);
+    function lending() view virtual external returns(address);
     function JackpotBurnPortion() view virtual external returns(uint);
     function QualificationThreshold() view virtual external returns(uint);
     function maxRandomNumber() view virtual external returns(uint);
@@ -32,7 +33,7 @@ abstract contract IGambling {
 
     function checkLPToken(address user) virtual public view returns (address);
     
-    function participate(uint gmbToken, uint betValue) virtual public;
+    function participate(uint, uint, bool) virtual public;
 
     function getJackpotValue(uint) virtual public view returns (uint, uint);
 
@@ -52,5 +53,7 @@ abstract contract IGambling {
     function claimPrize(uint gameNumber) virtual public;
 
     function getUserGameHistory(address user, uint roundNumber) public view virtual returns(UserGameHistory memory gameHistory);
+
+    function setLending(address) public virtual;
 
 }

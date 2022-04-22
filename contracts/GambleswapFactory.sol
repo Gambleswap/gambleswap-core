@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity >=0.5.16;
 
 import './interfaces/IGambleswapFactory.sol';
@@ -8,13 +10,17 @@ contract GambleswapFactory is IGambleswapFactory {
     address public override feeTo;
     address public override feeToSetter;
     address public override gmb;
+    address public override gambling;
+    address public override lending;
 
     mapping(address => mapping(address => address)) public override getPair;
     address[] public override allPairs;
 
-    constructor(address _feeToSetter, address _gmb) public {
+    constructor(address _feeToSetter, address _gmb, address _gambling, address _lending) public {
         feeToSetter = _feeToSetter;
         gmb = _gmb;
+        lending = _lending;
+        gambling = _gambling;
     }
 
     function allPairsLength() external view override returns (uint) {
@@ -38,7 +44,7 @@ contract GambleswapFactory is IGambleswapFactory {
         assembly {
             pair := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        IGambleswapPair(pair).initialize(token0, token1, gmb);
+        IGambleswapPair(pair).initialize(token0, token1, gmb, gambling, lending);
         getPair[token0][token1] = pair;
         getPair[token1][token0] = pair; // populate mapping in the reverse direction
         allPairs.push(pair);

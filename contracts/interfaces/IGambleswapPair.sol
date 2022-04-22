@@ -1,9 +1,15 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity >=0.5.0;
 
 interface IGambleswapPair {
 
     function MINIMUM_LIQUIDITY() external pure returns (uint);
     function factory() external view returns (address);
+    function lending() external view returns (address);
+    function gambling() external view returns (address);
+    function GMBPERBLOCK() external view returns (uint);
+    function gmb() external view returns (address);
     function token0() external view returns (address);
     function token1() external view returns (address);
     function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
@@ -19,5 +25,6 @@ interface IGambleswapPair {
     function claimGMB(address user) external;
     function updateDebt(address user) external;
 
-    function initialize(address, address, address) external;
+    function initialize(address, address, address, address, address) external;
+    function setLending(address) external;
 }

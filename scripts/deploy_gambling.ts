@@ -3,15 +3,12 @@ const { ethers, getNamedAccounts} = hre;
 const { getSigner } = ethers;
 import { GMBToken__factory } from "../types";
 
-export async function deployGambling(_gmbAddress=undefined, _lpAddress=undefined) {
-    const {lpAddress, gmbAddress} = await getNamedAccounts()
-
-    let GMBAddress = _gmbAddress || gmbAddress
-    let lpA = _lpAddress || lpAddress
+export async function deployGambling() {
+    const {factoryOwnerAddress, gmbAddress} = await getNamedAccounts()
 
     const Gambling = await ethers.getContractFactory("Gambling");
-    const gambling = await Gambling.connect(await getSigner(lpA)).deploy(GMBAddress);
-    let gmb = await GMBToken__factory.connect(GMBAddress, await getSigner(lpA))
+    const gambling = await Gambling.connect(await getSigner(factoryOwnerAddress)).deploy(gmbAddress);
+    let gmb = await GMBToken__factory.connect(gmbAddress, await getSigner(factoryOwnerAddress))
     await gmb.setGamblingContractAddress(gambling.address)
     console.log(`Gambling contract deployed at ${gambling.address}`)
     return gambling

@@ -3,16 +3,16 @@ const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 
 export async function deployGMB(_lpAddress=undefined) {
-    const {lpAddress} = await getNamedAccounts()
-    let lpA = _lpAddress || lpAddress
+    const {factoryOwnerAddress} = await getNamedAccounts()
+
     console.log("==========================================================================================");
-    console.log(`GMB admin: ${lpA}`);
+    console.log(`GMB admin: ${factoryOwnerAddress}`);
     console.log(`Start deploying contracts/GMB.sol:GMB`);
     console.log("==========================================================================================");
 
     const gmbFactory = await getContractFactory("contracts/GMB.sol:GMBToken");
 
-    const gmb = await gmbFactory.connect(await getSigner(lpA)).deploy(0);
+    const gmb = await gmbFactory.connect(await getSigner(factoryOwnerAddress)).deploy(0);
 
     console.log(`GMB has been deployed at ${gmb.address}`);
     return gmb.address

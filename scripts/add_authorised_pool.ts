@@ -5,12 +5,11 @@ const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 const BigNumber = require('big-number');
 
-export async function addAuthorisedPool(_pairAddress=undefined) {
-    const {pairAddress, gmbAddress, lpAddress} = await getNamedAccounts()
+export async function addAuthorisedPool() {
+    const {pairAddress, gmbAddress, factoryOwnerAddress} = await getNamedAccounts()
 
-    const pA = _pairAddress || pairAddress
 
-    const gmb:GMBToken = GMBToken__factory.connect(gmbAddress, await getSigner(lpAddress));
+    const gmb:GMBToken = GMBToken__factory.connect(gmbAddress, await getSigner(factoryOwnerAddress));
 
     await gmb.addNewPool(pairAddress);
     console.log(`pool is authorised ${pairAddress}`)
