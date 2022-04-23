@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-import "./interfaces/IGambleswapERC20.sol";
 import "./interfaces/IGambleswapLPLending.sol";
 import './interfaces/IERC20.sol';
 
@@ -61,7 +60,8 @@ contract GambleswapLPLending is IGambleswapLPLending {
         pool storage p = pools[index];
         require(p.lenders[msg.sender].valid, "you've never joined this pool before");
         uint interest = p.lenders[msg.sender].amount * (p.interestPerShare - p.lenders[msg.sender].debtPerShare);
-        IERC20(GMB).transfer(msg.sender, interest);
+        IERC20(GMB).transfer(msg.sender, interest/1e12);
+        IERC20(p.lpTokenAddress).transfer(msg.sender, p.lenders[msg.sender].amount);
         p.lenders[msg.sender].debtPerShare = p.interestPerShare;
         p.lenders[msg.sender].amount = 0;
 
@@ -71,7 +71,7 @@ contract GambleswapLPLending is IGambleswapLPLending {
     function lend(uint index, uint amount) public  override{
         require(index <= poolsNumber && index >= 1, "pool index not in range");
         pool storage p = pools[index];
-        IGambleswapERC20(p.lpTokenAddress).transferFrom(msg.sender, address(this), amount);
+        IERC20(p.lpTokenAddress).transferFrom(msg.sender, address(this), amount);
         if (p.lenders[msg.sender].valid) {
             IERC20(GMB).transfer(msg.sender, p.lenders[msg.sender].amount * (p.interestPerShare - p.lenders[msg.sender].debtPerShare));
             p.lenders[msg.sender].debtPerShare = p.interestPerShare;

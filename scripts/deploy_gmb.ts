@@ -2,7 +2,7 @@ import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner, getContractFactory } = ethers;
 
-export async function deployGMB(_lpAddress=undefined) {
+export async function deployGMB() {
     const {factoryOwnerAddress} = await getNamedAccounts()
 
     console.log("==========================================================================================");

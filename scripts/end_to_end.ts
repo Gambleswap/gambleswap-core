@@ -14,6 +14,7 @@ import {addLPToLending} from "./add_lp_to_lending"
 import {endGame} from "./end_game"
 import {transferToUser} from "./transferToUser"
 import {lendAndParticipate} from "./lend_and_participate"
+import {removeLPFromLending} from "./remove_lp_from_lending"
 import hre from "hardhat";
 const { getNamedAccounts} = hre;
 
@@ -28,7 +29,6 @@ async function mineBlocks(blockNumber: number) {
 }
 
 export async function mainn() {
-
 
     await deployGMB()
     await mineBlocks(3)
@@ -62,6 +62,7 @@ export async function mainn() {
     await lendAndParticipate()
     // await mineBlocks(3)
     await endGame()
+    await removeLPFromLending()
 }
 
 
