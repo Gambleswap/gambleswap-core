@@ -61,8 +61,8 @@ export async function mainn() {
     await participate()
     await lendAndParticipate()
     // await mineBlocks(3)
-    await endGame()
-    await removeLPFromLending()
+    // await endGame()
+    // await removeLPFromLending()
 }
 
 

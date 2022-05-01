@@ -11,8 +11,8 @@ export async function deployTestTokens(_lpAddress=undefined) {
 
 
     const MyTokenFactory = await getContractFactory('contracts/TestToken.sol:TestToken');
-    const rad = await MyTokenFactory.connect(await getSigner(lpA)).deploy('10000000000000000000000', '18', 'Token#1', 'RAD');
-    const dni = await MyTokenFactory.connect(await getSigner(lpA)).deploy('10000000000000000000000', '18', 'Token#2', 'DNI');
+    const rad = await MyTokenFactory.connect(await getSigner(lpA)).deploy('10000000000000000000000', '18', 'Token1', 'RAD');
+    const dni = await MyTokenFactory.connect(await getSigner(lpA)).deploy('10000000000000000000000', '18', 'Token2', 'DNI');
 
     console.log(`Token contract has been deployed at https://ropsten.etherscan.io/address/${rad.address}`);
     console.log(`Token contract has been deployed at https://ropsten.etherscan.io/address/${dni.address}`);

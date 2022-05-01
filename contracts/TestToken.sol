@@ -22,6 +22,8 @@ contract TestToken is IERC20{
         balanceOf[msg.sender] = _initialSupply;
         totalSupply = _initialSupply;
         decimals = _decimals;
+        name = _name;
+        symbol = _symbol;
     }
 
     function transfer(address _to, uint256 _value) public override returns (bool success) {

@@ -43,7 +43,7 @@ export async function lendAndParticipate(_betValue=undefined, _gmbValue=undefine
 }
 
 
-// swap()
+// lendAndParticipate()
 //     .then(() => process.exit(0))
 //     .catch(error => {
 //         console.error(error);
