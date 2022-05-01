@@ -5,25 +5,10 @@ import './interfaces/IERC20.sol';
 
 contract GambleswapLPLending is IGambleswapLPLending {
 
-    struct lender{
-        uint amount;
-        uint debtPerShare;
-        bool valid;
-    }
-
-    struct pool{
-        address lpTokenAddress;
-        uint lendersNum;
-        mapping (address => lender) lenders;
-        uint totalLiquidity;
-        uint totalLiquidityBorrowed;
-        uint interestPerShare;
-        uint interestPerBorrow;
-        bool valid;
-    }
-
-    mapping (uint => pool) pools;
-    uint poolsNumber;
+    mapping (uint => pool) override public pools;
+    mapping (uint => mapping(address => lender)) override public lenders;
+    
+    uint override public poolsNumber;
     address admin;
     address GMB;
     address gambling;
@@ -58,12 +43,16 @@ contract GambleswapLPLending is IGambleswapLPLending {
 
     function exitLendingPool(uint index) public override{
         pool storage p = pools[index];
-        require(p.lenders[msg.sender].valid, "you've never joined this pool before");
-        uint interest = p.lenders[msg.sender].amount * (p.interestPerShare - p.lenders[msg.sender].debtPerShare);
+        lender storage l = lenders[index][msg.sender];
+        require(l.valid, "you've never joined this pool before");
+        uint interest = l.amount * (p.interestPerShare - l.debtPerShare);
         IERC20(GMB).transfer(msg.sender, interest/1e12);
-        IERC20(p.lpTokenAddress).transfer(msg.sender, p.lenders[msg.sender].amount);
-        p.lenders[msg.sender].debtPerShare = p.interestPerShare;
-        p.lenders[msg.sender].amount = 0;
+        IERC20(p.lpTokenAddress).transfer(msg.sender, l.amount);
+        p.totalLiquidity -= l.amount;
+        l.debtPerShare = p.interestPerShare;
+        l.amount = 0;
+        l.valid = false;
+        p.lendersNum -= 1;
 
         emit ExitLend(msg.sender, p.lpTokenAddress, interest);
     }
@@ -71,16 +60,18 @@ contract GambleswapLPLending is IGambleswapLPLending {
     function lend(uint index, uint amount) public  override{
         require(index <= poolsNumber && index >= 1, "pool index not in range");
         pool storage p = pools[index];
+        lender storage l = lenders[index][msg.sender];
         IERC20(p.lpTokenAddress).transferFrom(msg.sender, address(this), amount);
-        if (p.lenders[msg.sender].valid) {
-            IERC20(GMB).transfer(msg.sender, p.lenders[msg.sender].amount * (p.interestPerShare - p.lenders[msg.sender].debtPerShare));
-            p.lenders[msg.sender].debtPerShare = p.interestPerShare;
+        if (l.valid) {
+            IERC20(GMB).transfer(msg.sender, l.amount * (p.interestPerShare - l.debtPerShare));
+            l.debtPerShare = p.interestPerShare;
         }
         else {
-            p.lenders[msg.sender].valid = true;
-            p.lenders[msg.sender].debtPerShare = p.interestPerShare;
+            l.valid = true;
+            l.debtPerShare = p.interestPerShare;
+            p.lendersNum += 1;
         }
-        p.lenders[msg.sender].amount += amount;
+        l.amount += amount;
         p.totalLiquidity += amount;
 
         emit Lend(msg.sender, p.lpTokenAddress, amount);
@@ -88,7 +79,7 @@ contract GambleswapLPLending is IGambleswapLPLending {
 
     function getCheapestPool() public view override returns (uint res) {
         res = 1;
-        for (uint256 index = 1; index < poolsNumber; index++) {
+        for (uint256 index = 1; index <= poolsNumber; index++) {
             if (pools[index].interestPerBorrow < pools[index].interestPerBorrow){
                 uint fundsRemaining = pools[index].totalLiquidity - pools[index].totalLiquidityBorrowed;
                 if (IERC20(pools[index].lpTokenAddress).totalSupply() < fundsRemaining * 1e4)
@@ -109,7 +100,7 @@ contract GambleswapLPLending is IGambleswapLPLending {
     }
 
     function refresh() onlyGambling public override{
-        for (uint256 index = 1; index < poolsNumber; index++)
+        for (uint256 index = 1; index <= poolsNumber; index++)
             pools[index].totalLiquidityBorrowed = 0;
             
         emit Refresh(block.number);

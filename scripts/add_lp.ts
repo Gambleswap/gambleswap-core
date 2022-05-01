@@ -20,8 +20,8 @@ export async function addLP(_lpAddress:string="", _routerAddress:string="", _tok
     const router:GambleswapRouter = await GambleswapRouter__factory.connect(rA, await getSigner(lpA))
     const rad:IERC20 = await IERC20__factory.connect(tA, await getSigner(lpA))
     const dni:IERC20 = await IERC20__factory.connect(tB, await getSigner(lpA))
-    await rad.approve(rA, '9999999999999999999999')
-    await dni.approve(rA, '9999999999999999999999')
+    await rad.approve(rA, '999999999999999999999999999')
+    await dni.approve(rA, '999999999999999999999999999')
     await router.addLiquidity(tA, tB,
             '2000000000000000000', '2000000000000000000', 
             '1000000000000000000', '1000000000000000000', 

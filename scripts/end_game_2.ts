@@ -3,15 +3,12 @@ import hre from "hardhat";
 const { ethers, getNamedAccounts} = hre;
 const { getSigner} = ethers;
 
-export async function endGame(_number=undefined, _gamblingAddress=undefined, _user=undefined, _factoryOwnerAddress=undefined) {
+export async function endGame() {
 
-    const {lpAddress, gamblingAddress, factoryOwnerAddress} = await getNamedAccounts();
-    let gA = _gamblingAddress || gamblingAddress
-    let user = _user || lpAddress
-    let fOA = _factoryOwnerAddress || lpAddress
-    let number = _number || 40 
+    const {gamblingAddress, factoryOwnerAddress} = await getNamedAccounts();
+    let number = 40 
 
-    const gambling = await Gambling__factory.connect(gA, await getSigner(fOA))
+    const gambling = await Gambling__factory.connect(gamblingAddress, await getSigner(factoryOwnerAddress))
 
     await gambling.emergencyEnd(number)
 
