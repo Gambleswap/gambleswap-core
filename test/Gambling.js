@@ -202,7 +202,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(1)
         await gambling.connect(_user).claimLP(1)
         expect(await gmb.balanceOf(_user.address)).to.equal("90000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("90229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("90239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
@@ -215,7 +215,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(2)
         await gambling.connect(_user).claimLP(2)
         expect(await gmb.balanceOf(_user.address)).to.equal("80000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("80229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("80239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
@@ -228,7 +228,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(3)
         await expect(gambling.connect(_user).claimLP(3)).to.be.reverted
         expect(await gmb.balanceOf(_user.address)).to.equal("115000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("70229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("70239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
     })
@@ -256,7 +256,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(1)
         await gambling.connect(_user).claimLP(1)
         expect(await gmb.balanceOf(_user.address)).to.equal("90000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("90229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("90239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
@@ -269,7 +269,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(2)
         await gambling.connect(_user).claimLP(2)
         expect(await gmb.balanceOf(_user.address)).to.equal("80000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("80229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("80239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
@@ -282,7 +282,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(3)
         await gambling.connect(_user).claimLP(3)
         expect(await gmb.balanceOf(_user.address)).to.equal("70000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("70229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("70239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
@@ -295,7 +295,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(4)
         await gambling.connect(_user).claimLP(4)
         expect(await gmb.balanceOf(_user.address)).to.equal("60000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("60229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("60239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
@@ -308,7 +308,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(5)
         await expect(gambling.connect(_user).claimLP(5)).to.be.reverted
         expect(await gmb.balanceOf(_user.address)).to.equal("65000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("50229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("50239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
     })
@@ -336,7 +336,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(1)
         await gambling.connect(_user).claimLP(1)
         expect(await gmb.balanceOf(_user.address)).to.equal("90000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("90229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("90239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
@@ -349,7 +349,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(2)
         await gambling.connect(_user).claimLP(2)
         expect(await gmb.balanceOf(_user.address)).to.equal("80000000000000000000000")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("80229974999999899885025")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("80239974999999899880025")
         expect(await pair.balanceOf(_user.address)).to.equal("999999999999999")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1998999999999999001")
 
@@ -367,7 +367,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(3)
         await gambling.connect(_user).claimLP(3)
         expect(await gmb.balanceOf(_user.address)).to.equal("69990099999999999999900")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("70379899999999899810100")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("70389899999999899805100")
         expect(await pair.balanceOf(_user.address)).to.equal("0")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1000499999999999500")
 
@@ -381,7 +381,7 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(4)
         await gambling.connect(_user).claimLP(4)
         expect(await gmb.balanceOf(_user.address)).to.equal("59980099999999999999900")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("60379899999999899810100")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("60389899999999899805100")
         expect(await pair.balanceOf(_user.address)).to.equal("0")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1000499999999999500")
 
@@ -394,11 +394,11 @@ describe("Gambling Contract", function () {
         await gambling.connect(lp).claimLP(5)
         await expect(gambling.connect(_user).claimLP(5)).to.be.reverted
         expect(await gmb.balanceOf(_user.address)).to.equal("64970099999999999999900")
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("50379899999999899810100")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("50389899999999899805100")
         expect(await pair.balanceOf(_user.address)).to.equal("0")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1000499999999999500")
         await lending.connect(lp).exitLendingPool(1)
-        expect(await gmb.balanceOf(_lpAddress)).to.equal("50409899999999897920092")
+        expect(await gmb.balanceOf(_lpAddress)).to.equal("50419899999999897915092")
         expect(await pair.balanceOf(_lpAddress)).to.equal("1999999999999999000")
         
     })

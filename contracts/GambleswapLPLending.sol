@@ -105,4 +105,12 @@ contract GambleswapLPLending is IGambleswapLPLending {
             
         emit Refresh(block.number);
     }
+
+    function getLentAmount(address user, address lp) public view override returns (uint amount) {
+        for(uint i = 1; i <= poolsNumber; i++) {
+          if (pools[i].lpTokenAddress == lp) {
+              amount = lenders[i][user].amount;
+            }
+        }
+    }
 }
