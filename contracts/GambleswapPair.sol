@@ -10,6 +10,7 @@ import './interfaces/IERC20.sol';
 import "hardhat/console.sol";
 import './interfaces/IGambleswapFactory.sol';
 import './interfaces/IGambleswapCallee.sol';
+import './interfaces/IGambleswapLPLending.sol';
 import './interfaces/IGMB.sol';
 
 contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
@@ -170,8 +171,15 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     function _claimGMB(address user) internal{
         if (balanceOf[user] == 0)
             return;
-        uint remaining = gmbPerShare.mul(balanceOf[user]).sub(profiles[user].debt);
+        console.log("_claim1");
+        console.log(user);
+        console.log(profiles[user].debt);
+        console.log(balanceOf[user]);
+        console.log(IGambleswapLPLending(lending).getLentAmount(user, address(this)));
+        uint remaining = gmbPerShare.mul(balanceOf[user] + IGambleswapLPLending(lending).getLentAmount(user, address(this))).sub(profiles[user].debt);
         updateDebt(user);
+        console.log("_claim2");
+        console.log(user);
         // uint allPendingGMBs = gmbPerShare.mul(totalGMBShare).add(GMBPERBLOCK.mul(block.number.sub(lastUpdatedBlock)));
         // gmbPerShare = allPendingGMBs / totalGMBShare;
         // uint userReward = gmbPerShare.mul(profiles[user].share) / totalGMBShare;
@@ -181,7 +189,7 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
     }
 
     function updateDebt(address user) override public {
-        profiles[user].debt = gmbPerShare.mul(balanceOf[user]);
+        profiles[user].debt = gmbPerShare.mul(balanceOf[user] + IGambleswapLPLending(lending).getLentAmount(msg.sender, address(this)));
     }
 
     function claimGMB(address user) lock updateGMBPerShare override public{

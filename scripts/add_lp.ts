@@ -8,7 +8,7 @@ const { getSigner } = ethers;
 
 export async function addLP(_lpAddress:string="", _routerAddress:string="", _tokenA:string="", _tokenB:string="") {
 
-    const {lpAddress, routerAddress, tokenAddress1, tokenAddress2} = await getNamedAccounts();
+    const {lpAddress, routerAddress, tokenAddress1, tokenAddress2, pairAddress} = await getNamedAccounts();
 
     let lpA = _lpAddress !== "" ? _lpAddress : lpAddress
     let rA = _routerAddress !== ""? _routerAddress : routerAddress
@@ -26,6 +26,9 @@ export async function addLP(_lpAddress:string="", _routerAddress:string="", _tok
             '2000000000000000000', '2000000000000000000', 
             '1000000000000000000', '1000000000000000000', 
             lpA, 1746692432, {gasLimit: 2100000})
+    let pair = await IERC20__factory.connect(pairAddress, await getSigner(lpAddress))
+
+    await pair.approve(router.address, "9999999999999999999999999999999")
 }
 
 
