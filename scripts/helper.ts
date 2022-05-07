@@ -6,16 +6,17 @@ const { getSigner} = ethers;
 
 export async function main() {
 
-    const {lpAddress, lendingAddress, pairAddress, gmbAddress} = await getNamedAccounts();
+    const {lpAddress, lendingAddress, pairAddress, gmbAddress, gamblingAddress} = await getNamedAccounts();
 
 
     
 
-    const gmb = await GMBToken__factory.connect(gmbAddress, await getSigner(lpAddress))
+    const gambling = await Gambling__factory.connect(gamblingAddress, await getSigner(lpAddress))
     const lending = await GambleswapLPLending__factory.connect(lendingAddress, await getSigner(lpAddress))
     const pair = await GambleswapPair__factory.connect(pairAddress, await getSigner(lpAddress))
     console.log(`${await pair.connect(await getSigner(lpAddress)).balanceOf(lpAddress)}`)
     console.log(`${await lending.connect(await getSigner(lpAddress)).getLentAmount(lpAddress, pairAddress)}`)
+    console.log(`${await gambling.connect(await getSigner(lpAddress)).getRecentGamesLPAmount(2, lpAddress, pairAddress)}`)
 
     // const pair = await GambleswapPair__factory.connect(pA, await getSigner(user))
     // await pair.connect(await getSigner(user)).approve(gA, '9999999999999999999999999999999999999999')
