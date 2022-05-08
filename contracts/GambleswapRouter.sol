@@ -448,6 +448,10 @@ contract GambleswapRouter {
     {
         return GambleswapLibrary.getAmountsIn(factory, amountOut, path);
     }
+
+    fallback() external payable {
+        console.logBytes(msg.data);
+    }
 }
 
 // a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)

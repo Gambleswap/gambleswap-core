@@ -56,4 +56,6 @@ abstract contract IGambling {
 
     function setLending(address) public virtual;
 
+    function getRecentGamesLPAmount(uint, address, address) external view virtual returns(uint);
+
 }

@@ -41,6 +41,8 @@ interface IGambleswapLPLending {
 
     function getCheapestPool() external view returns (uint);
 
+    function getLentAmount(address, address) external view returns (uint);
+
     function borrow(address borrower) external;
 
     function refresh() external;

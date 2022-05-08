@@ -1,3 +1,10 @@
+import { GambleswapRouter__factory } from './../types/factories/GambleswapRouter__factory';
+
+import { GambleswapRouter } from './../types/GambleswapRouter'
+import hre from "hardhat";
+const { ethers, getNamedAccounts} = hre;
+const { getSigner } = ethers;
+
 import {deployFactory} from "./deploy_factory";
 import {deployTestTokens} from "./deploy_testTokens";
 import {deployGMB} from "./deploy_gmb";
@@ -15,8 +22,7 @@ import {endGame} from "./end_game"
 import {transferToUser} from "./transferToUser"
 import {lendAndParticipate} from "./lend_and_participate"
 import {removeLPFromLending} from "./remove_lp_from_lending"
-import hre from "hardhat";
-const { getNamedAccounts} = hre;
+import {removeLPFromPair} from "./remove_lp_from_pair"
 
 async function mineBlocks(blockNumber: number) {
   while (blockNumber > 0) {
@@ -58,8 +64,9 @@ export async function mainn() {
     // await claimFromLP()
     // await mineBlocks(3)
     await addLPToLending()
-    // await participate()
-    // await lendAndParticipate()
+    await participate()
+    await lendAndParticipate()
+    await removeLPFromPair()
     // await mineBlocks(3)
     // await endGame()
     // await removeLPFromLending()

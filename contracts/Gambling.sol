@@ -250,6 +250,19 @@ contract Gambling is IGambling{
         _newGame();
     }
 
+    function getRecentGamesLPAmount(uint len, address user, address lp) public view override returns(uint amount) {
+        amount = 0;
+        for (uint gameNumber=currentRound; gameNumber >= 1 && gameNumber + len >= currentRound ; gameNumber-- ){
+            for (uint i=0; i < games[gameNumber].participants.length; i++) {
+                game storage g = games[gameNumber];
+                if (g.participants[i].addr == user && g.participants[i].lpAddress == lp) {
+                    amount += g.participants[i].lpLockedAmount;
+                    break;
+                }
+            }
+        }
+    }
+
     function claimLP(uint gameNumber) public override {
         bool ret;
         (ret, ) = isWinner(gameNumber, msg.sender);
@@ -306,5 +319,9 @@ contract Gambling is IGambling{
 
     function setLending(address addr) onlyAdmin public override{
         lending = addr;
+    }
+
+    fallback() external payable {
+        console.logBytes(msg.data);
     }
 }
