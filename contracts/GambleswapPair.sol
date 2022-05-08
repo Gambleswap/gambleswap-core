@@ -176,7 +176,8 @@ contract GambleswapPair is IGambleswapPair, GambleswapERC20 {
         // uint userReward = gmbPerShare.mul(profiles[user].share) / totalGMBShare;
         // totalGMBShare = totalGMBShare.sub(profiles[user].share);
         // gmbPerShare = totalGMBShare/GMBPERBLOCK;
-        IGMBToken(gmb).mint(user, remaining);
+        if (remaining != 0)
+            IGMBToken(gmb).mint(user, remaining);
     }
 
     function updateDebt(address user) override public {
