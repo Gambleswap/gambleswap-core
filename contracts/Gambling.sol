@@ -71,23 +71,26 @@ contract Gambling is IGambling{
         _;
     }
 
-    function checkLPToken(address user) public override view returns (address){
+    function checkLPToken(address user, address lpAddr) public override view returns (bool){
         for(uint256 i=0; i<IGMBToken(gmbTokenContract).getAuthorisedPoolsLength(); i++) {
             address authorizePoolAddr = IGMBToken(gmbTokenContract).authorisedPools(i);
+            if (lpAddr != authorizePoolAddr) {
+                continue;
+            }
             uint256 userBalance = IERC20(authorizePoolAddr).balanceOf(user);
             uint256 totalSupply = IERC20(authorizePoolAddr).totalSupply();
             if (userBalance * 1e4 > totalSupply){
-                return authorizePoolAddr;
+                return true;
             }
         }
-        return address(0);
+        return false;
     }
 
     function participated(uint roundNumber, address user) public override view returns (bool){
         return games[roundNumber].isParticipated[user];
     }
     
-    function participate(uint gmbToken, uint betValue, bool lend) public override {
+    function participate(uint gmbToken, uint betValue, address choosenLpAddr, bool lend) public override {
         address user = msg.sender;
         require(gmbToken > 0, "GMB token must be more than zero");
         require(participated(currentRound , user) == false, 
@@ -95,24 +98,22 @@ contract Gambling is IGambling{
         require(IERC20(gmbTokenContract).balanceOf(msg.sender) >= gmbToken, 
                 "You have insufficient GMB Token");
         uint lpLockedAmount = 0;
-        address lpAddress = address(0);
         if (lend) {
             IGambleswapLPLending(lending).borrow(msg.sender);
         }
         else {
-            lpAddress = checkLPToken(msg.sender);
-            // TODO add LP lending
-            require(lpAddress != address(0), "Not enough LP token");
-            uint totalSupply = IERC20(lpAddress).totalSupply();
+            bool hasLP = checkLPToken(msg.sender, choosenLpAddr);
+            require(hasLP == true, "Not enough LP token");
+            uint totalSupply = IERC20(choosenLpAddr).totalSupply();
             lpLockedAmount = totalSupply / 1e4;
 
-            IERC20(lpAddress).transferFrom(user, address(this), lpLockedAmount);
+            IERC20(choosenLpAddr).transferFrom(user, address(this), lpLockedAmount);
         }
         //Send GMB tokens from the user to the gamblingContract
         IERC20(gmbTokenContract).transferFrom(msg.sender, address(this), gmbToken);
 
         games[currentRound].isParticipated[user] = true;
-        games[currentRound].participants.push(ParticipationData(user, gmbToken, betValue, lpLockedAmount, lpAddress, false));
+        games[currentRound].participants.push(ParticipationData(user, gmbToken, betValue, lpLockedAmount, choosenLpAddr, false));
     }
 
     function _generate_random_number() private view returns(uint256) {

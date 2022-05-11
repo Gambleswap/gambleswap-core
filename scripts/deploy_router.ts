@@ -16,7 +16,7 @@ export async function deployRouter(_factoryAddress=undefined) {
     const routerFactory = await getContractFactory("contracts/GambleswapRouter.sol:GambleswapRouter");
 
     const router = await routerFactory.connect(await getSigner(factoryOwnerAddress)).deploy(fA, wethAddress);
-    console.log("Deployed at " + router.address)
+    console.log("Deployed GambleswapRouter at " + router.address)
     return router.address
 }
 

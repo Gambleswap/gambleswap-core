@@ -27,7 +27,7 @@ export async function lendAndParticipate(_betValue=undefined, _gmbValue=undefine
     const lpBal = await gmb.balanceOf(lpAddress)
     await gmb.connect(await getSigner(lpAddress)).transfer(userAddress, lpBal.div(2))
 
-    await gambling.participate(gmbValue, betValue, true)
+    await gambling.participate(gmbValue, betValue, pairAddress, true)
     
     console.log("PARTICIPATED\n");
     console.log("==========================================================================================\n");

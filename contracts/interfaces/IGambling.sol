@@ -31,9 +31,9 @@ abstract contract IGambling {
 
     function getCurrentRoundCoveragePerGMB() virtual public view returns(uint);
 
-    function checkLPToken(address user) virtual public view returns (address);
+    function checkLPToken(address, address) virtual public view returns (bool);
     
-    function participate(uint, uint, bool) virtual public;
+    function participate(uint, uint, address, bool) virtual public;
 
     function getJackpotValue(uint) virtual public view returns (uint, uint);
 
