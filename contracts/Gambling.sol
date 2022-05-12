@@ -16,11 +16,12 @@ contract Gambling is IGambling{
     address public override admin;
     address public override lending;
     uint public override constant JackpotBurnPortion = 4;
+    uint public override constant FinalizerRewardPortion = 100;
     uint public override QualificationThreshold = 1;
     uint public override maxRandomNumber = 5000000000;
     uint public override initialInterval = 10;
     uint public override currentRound = 1;
-    uint public override gameDuration = 2000;
+    uint public override gameDuration = 40000;
 
     struct game{
         uint winnerShare;
@@ -31,6 +32,8 @@ contract Gambling is IGambling{
         uint coveragePerGMB;
         bool finished;
         uint remainingFunds;
+        uint startingBlock;
+        uint finalizerReward;
         bool valid;
     }
 
@@ -64,10 +67,16 @@ contract Gambling is IGambling{
         gmbTokenContract = GMBContractAddr;
         admin = msg.sender;
         games[0].coveragePerGMB = 10 * 1e12;
+        games[0].startingBlock = block.number;
     }
 
     modifier onlyAdmin {
         require(admin == msg.sender, "This is a restricted function for admin");
+        _;
+    }
+
+    modifier onlyExternal  {
+        require(msg.sender == tx.origin, "Only external actor can perform this action.");
         _;
     }
 
@@ -198,6 +207,7 @@ contract Gambling is IGambling{
     function _newGame() internal {
         currentRound += 1;
         games[currentRound].valid = true;
+        games[currentRound].startingBlock = block.number;
         //TODO emit log
     }
 
@@ -214,9 +224,10 @@ contract Gambling is IGambling{
         (uint jpValue, uint totalPrize) = getJackpotValue(currentRound);
         uint tokensToBurn = jpValue / JackpotBurnPortion;
         games[currentRound].remainingFunds = jpValue - tokensToBurn;
+        games[currentRound].finalizerReward = jpValue / FinalizerRewardPortion;
         console.log(burning_game(currentRound));
         if (games[currentRound].winners.length > 0) {
-            games[currentRound].winnerShare =  (totalPrize - tokensToBurn) / games[currentRound].winners.length;
+            games[currentRound].winnerShare =  (totalPrize - tokensToBurn - games[currentRound].finalizerReward) / games[currentRound].winners.length;
             games[currentRound].remainingFunds = 0;
         }
         else {
@@ -237,11 +248,13 @@ contract Gambling is IGambling{
         IGambleswapLPLending(lending).refresh();
     }
 
-    function endGame() public override onlyAdmin {
+    function endGame() public override onlyExternal {
         require(games[currentRound].participants.length > 0, "There is no participant");
+        require(block.number >= games[currentRound].startingBlock + gameDuration, "Too early to end this round.");
 
         uint256 randomNumber = _generate_random_number();
         _endGame(randomNumber);
+        IERC20(gmbTokenContract).transfer(msg.sender, games[currentRound].finalizerReward);
         _newGame();
     }
 
@@ -255,7 +268,7 @@ contract Gambling is IGambling{
         for (uint gameNumber=currentRound; gameNumber >= 1 && gameNumber + len >= currentRound ; gameNumber-- ){
             for (uint i=0; i < games[gameNumber].participants.length; i++) {
                 game storage g = games[gameNumber];
-                if (g.participants[i].addr == user && g.participants[i].lpAddress == lp) {
+                if (g.participants[i].addr == user && g.participants[i].lpAddress == lp && !g.participants[i].lpClaimed) {
                     amount += g.participants[i].lpLockedAmount;
                     break;
                 }

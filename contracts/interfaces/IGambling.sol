@@ -20,6 +20,8 @@ abstract contract IGambling {
     function admin() view virtual external returns(address);
     function lending() view virtual external returns(address);
     function JackpotBurnPortion() view virtual external returns(uint);
+    function FinalizerRewardPortion() view virtual external returns(uint);
+
     function QualificationThreshold() view virtual external returns(uint);
     function maxRandomNumber() view virtual external returns(uint);
     function initialInterval() view virtual external returns(uint);
